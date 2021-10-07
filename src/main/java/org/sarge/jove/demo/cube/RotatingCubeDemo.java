@@ -1,4 +1,4 @@
-package org.sarge.jove.demo.triangle;
+package org.sarge.jove.demo.cube;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -8,7 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
-public class TriangleDemo {
+public class RotatingCubeDemo {
 	@Bean
 	public static DataSource source() {
 		return DataSource.of("./src/main/resources");
@@ -17,6 +17,6 @@ public class TriangleDemo {
 	@SuppressWarnings("resource")
 	public static void main(String[] args) {
 		ToStringBuilder.setDefaultStyle(ToStringStyle.SHORT_PREFIX_STYLE);
-		SpringApplication.run(TriangleDemo.class, args);
+		SpringApplication.run(RotatingCubeDemo.class, args);
 	}
 }

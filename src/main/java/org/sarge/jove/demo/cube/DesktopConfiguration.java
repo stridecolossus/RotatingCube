@@ -1,4 +1,4 @@
-package org.sarge.jove.demo.triangle;
+package org.sarge.jove.demo.cube;
 
 import org.sarge.jove.common.Dimensions;
 import org.sarge.jove.common.Handle;
@@ -20,7 +20,7 @@ class DesktopConfiguration {
 	@Bean
 	public static Window window(Desktop desktop) {
 		return new Window.Builder()
-				.title("TriangleDemo")
+				.title("CubeDemo")
 				.size(new Dimensions(1024, 768))
 				.property(Window.Property.DISABLE_OPENGL)
 				.build(desktop);

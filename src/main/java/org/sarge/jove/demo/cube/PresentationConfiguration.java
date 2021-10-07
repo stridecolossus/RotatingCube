@@ -1,4 +1,4 @@
-package org.sarge.jove.demo.triangle;
+package org.sarge.jove.demo.cube;
 
 import java.util.List;
 

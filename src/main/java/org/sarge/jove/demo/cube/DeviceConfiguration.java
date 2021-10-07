@@ -1,4 +1,4 @@
-package org.sarge.jove.demo.triangle;
+package org.sarge.jove.demo.cube;
 
 import org.sarge.jove.common.Handle;
 import org.sarge.jove.platform.vulkan.VkQueueFlag;

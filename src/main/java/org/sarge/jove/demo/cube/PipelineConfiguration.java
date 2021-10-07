@@ -1,8 +1,7 @@
-package org.sarge.jove.demo.triangle;
+package org.sarge.jove.demo.cube;
 
 import java.io.IOException;
 
-import org.sarge.jove.platform.vulkan.VkCullMode;
 import org.sarge.jove.platform.vulkan.VkShaderStage;
 import org.sarge.jove.platform.vulkan.core.LogicalDevice;
 import org.sarge.jove.platform.vulkan.core.Shader;
@@ -28,12 +27,12 @@ class PipelineConfiguration {
 
 	@Bean
 	public Shader vertex() throws IOException {
-		return loader.load("spv.triangle.vert");
+		return loader.load("spv.quad.vert");
 	}
 
 	@Bean
 	public Shader fragment() throws IOException {
-		return loader.load("spv.triangle.frag");
+		return loader.load("spv.quad.faked.frag");
 	}
 
 	@Bean
@@ -47,9 +46,6 @@ class PipelineConfiguration {
 				.layout(layout)
 				.pass(pass)
 				.viewport(swapchain.extents())
-				.rasterizer()
-					.cull(VkCullMode.NONE) // TODO
-					.build()
 				.shader(VkShaderStage.VERTEX)
 					.shader(vertex)
 					.build()
