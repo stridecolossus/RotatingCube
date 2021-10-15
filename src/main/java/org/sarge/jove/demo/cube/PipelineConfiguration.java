@@ -1,13 +1,17 @@
 package org.sarge.jove.demo.cube;
 
 import java.io.IOException;
+import java.util.List;
 
+import org.sarge.jove.common.Coordinate.Coordinate2D;
+import org.sarge.jove.geometry.Point;
 import org.sarge.jove.platform.vulkan.VkShaderStage;
 import org.sarge.jove.platform.vulkan.core.LogicalDevice;
 import org.sarge.jove.platform.vulkan.core.Shader;
 import org.sarge.jove.platform.vulkan.core.Shader.ShaderLoader;
 import org.sarge.jove.platform.vulkan.pipeline.Pipeline;
 import org.sarge.jove.platform.vulkan.pipeline.PipelineLayout;
+import org.sarge.jove.platform.vulkan.render.DescriptorSet;
 import org.sarge.jove.platform.vulkan.render.RenderPass;
 import org.sarge.jove.platform.vulkan.render.Swapchain;
 import org.sarge.jove.util.DataSource;
@@ -32,12 +36,14 @@ class PipelineConfiguration {
 
 	@Bean
 	public Shader fragment() throws IOException {
-		return loader.load("spv.quad.faked.frag");
+		return loader.load("spv.quad.frag");
 	}
 
 	@Bean
-	PipelineLayout pipelineLayout() {
-		return new PipelineLayout.Builder(dev).build();
+	PipelineLayout pipelineLayout(DescriptorSet.Layout layout) {
+		return new PipelineLayout.Builder()
+				.add(layout)
+				.build(dev);
 	}
 
 	@Bean
@@ -51,6 +57,9 @@ class PipelineConfiguration {
 					.build()
 				.shader(VkShaderStage.FRAGMENT)
 					.shader(fragment)
+					.build()
+				.input()
+					.add(List.of(Point.LAYOUT, Coordinate2D.LAYOUT))
 					.build()
 				.build(dev);
 	}

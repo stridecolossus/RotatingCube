@@ -5,6 +5,7 @@ import org.sarge.jove.common.Handle;
 import org.sarge.jove.platform.desktop.Desktop;
 import org.sarge.jove.platform.desktop.Window;
 import org.sarge.jove.platform.vulkan.core.Instance;
+import org.sarge.jove.platform.vulkan.core.Surface;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,16 +19,17 @@ class DesktopConfiguration {
 	}
 
 	@Bean
-	public static Window window(Desktop desktop) {
+	public static Window window(Desktop desktop, ApplicationConfiguration cfg) {
 		return new Window.Builder()
-				.title("CubeDemo")
+				.title(cfg.getTitle())
 				.size(new Dimensions(1024, 768))
 				.property(Window.Property.DISABLE_OPENGL)
 				.build(desktop);
 	}
 
-	@Bean("surfaceHandle")
-	public static Handle surface(Instance instance, Window window) {
-		return window.surface(instance.handle());
+	@Bean
+	public static Surface surface(Instance instance, Window window) {
+		final Handle handle = window.surface(instance.handle());
+		return new Surface(handle, instance);
 	}
 }
