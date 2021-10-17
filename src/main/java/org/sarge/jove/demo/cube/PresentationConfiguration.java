@@ -8,6 +8,7 @@ import org.sarge.jove.common.Dimensions;
 import org.sarge.jove.platform.vulkan.VkAttachmentLoadOp;
 import org.sarge.jove.platform.vulkan.VkAttachmentStoreOp;
 import org.sarge.jove.platform.vulkan.VkImageLayout;
+import org.sarge.jove.platform.vulkan.VkPresentModeKHR;
 import org.sarge.jove.platform.vulkan.core.LogicalDevice;
 import org.sarge.jove.platform.vulkan.core.Surface;
 import org.sarge.jove.platform.vulkan.render.Attachment;
@@ -28,6 +29,7 @@ class PresentationConfiguration {
 		return new Swapchain.Builder(dev, surface)
 				.count(cfg.getFrameCount())
 				.clear(cfg.getBackground())
+				.mode(VkPresentModeKHR.MAILBOX_KHR)
 				.build();
 	}
 
@@ -53,9 +55,9 @@ class PresentationConfiguration {
 	public static List<FrameBuffer> buffers(Swapchain swapchain, RenderPass pass) {
 		final Dimensions extents = swapchain.extents();
 		return swapchain
-			.views()
-			.stream()
-			.map(view -> FrameBuffer.create(pass, extents, List.of(view)))
-			.collect(toList());
+				.views()
+				.stream()
+				.map(view -> FrameBuffer.create(pass, extents, List.of(view)))
+				.collect(toList());
 	}
 }

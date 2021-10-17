@@ -1,10 +1,9 @@
 package org.sarge.jove.demo.cube;
 
 import java.io.IOException;
-import java.util.List;
 
-import org.sarge.jove.common.Coordinate.Coordinate2D;
-import org.sarge.jove.geometry.Point;
+import org.sarge.jove.common.Rectangle;
+import org.sarge.jove.model.Model;
 import org.sarge.jove.platform.vulkan.VkShaderStage;
 import org.sarge.jove.platform.vulkan.core.LogicalDevice;
 import org.sarge.jove.platform.vulkan.core.Shader;
@@ -31,12 +30,12 @@ class PipelineConfiguration {
 
 	@Bean
 	public Shader vertex() throws IOException {
-		return loader.load("spv.quad.vert");
+		return loader.load("spv.cube.vert");
 	}
 
 	@Bean
 	public Shader fragment() throws IOException {
-		return loader.load("spv.quad.frag");
+		return loader.load("spv.cube.frag");
 	}
 
 	@Bean
@@ -47,11 +46,15 @@ class PipelineConfiguration {
 	}
 
 	@Bean
-	public Pipeline pipeline(RenderPass pass, Swapchain swapchain, Shader vertex, Shader fragment, PipelineLayout layout) {
+	public Pipeline pipeline(RenderPass pass, Swapchain swapchain, Shader vertex, Shader fragment, PipelineLayout layout, Model model) {
+		final Rectangle viewport = new Rectangle(swapchain.extents());
 		return new Pipeline.Builder()
 				.layout(layout)
 				.pass(pass)
-				.viewport(swapchain.extents())
+				.viewport()
+					.viewport(viewport)
+					.scissor(viewport)
+					.build()
 				.shader(VkShaderStage.VERTEX)
 					.shader(vertex)
 					.build()
@@ -59,7 +62,10 @@ class PipelineConfiguration {
 					.shader(fragment)
 					.build()
 				.input()
-					.add(List.of(Point.LAYOUT, Coordinate2D.LAYOUT))
+					.add(model.header().layout())
+					.build()
+				.assembly()
+					.topology(model.header().primitive())
 					.build()
 				.build(dev);
 	}

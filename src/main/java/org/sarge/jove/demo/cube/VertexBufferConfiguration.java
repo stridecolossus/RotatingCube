@@ -1,11 +1,7 @@
 package org.sarge.jove.demo.cube;
 
-import java.nio.ByteBuffer;
-
-import org.sarge.jove.common.Bufferable;
-import org.sarge.jove.common.Coordinate.Coordinate2D;
-import org.sarge.jove.common.Vertex;
-import org.sarge.jove.geometry.Point;
+import org.sarge.jove.model.CubeBuilder;
+import org.sarge.jove.model.Model;
 import org.sarge.jove.platform.vulkan.VkBufferUsage;
 import org.sarge.jove.platform.vulkan.VkMemoryProperty;
 import org.sarge.jove.platform.vulkan.common.Command.Pool;
@@ -18,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class VertexBufferConfiguration {
+	/*
 	private static final Bufferable VERTICES = new Bufferable() {
 		private final Vertex[] vertices = {
 				new Vertex.Builder().position(new Point(-0.5f, +0.5f, 0)).coordinate(Coordinate2D.TOP_LEFT).build(),
@@ -38,11 +35,17 @@ public class VertexBufferConfiguration {
 			}
 		}
 	};
+	*/
 
 	@Bean
-	public static VulkanBuffer vbo(LogicalDevice dev, AllocationService allocator, Pool graphics) {
+	public static Model cube() {
+		return new CubeBuilder().build();
+	}
+
+	@Bean
+	public static VulkanBuffer vbo(LogicalDevice dev, AllocationService allocator, Pool graphics, Model model) {
 		// Create staging buffer
-		final VulkanBuffer staging = VulkanBuffer.staging(dev, allocator, VERTICES);
+		final VulkanBuffer staging = VulkanBuffer.staging(dev, allocator, model.vertices());
 
 		// Init VBO memory properties
 		final MemoryProperties<VkBufferUsage> props = new MemoryProperties.Builder<VkBufferUsage>()

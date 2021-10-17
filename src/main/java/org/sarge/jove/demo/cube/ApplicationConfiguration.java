@@ -10,6 +10,7 @@ public class ApplicationConfiguration {
 	private String title;
 	private int frames;
 	private Colour col = Colour.BLACK;
+	private long period;
 
 	public String getTitle() {
 		return title;
@@ -25,6 +26,14 @@ public class ApplicationConfiguration {
 
 	public void setFrameCount(int frames) {
 		this.frames = frames;
+	}
+
+	public long getPeriod() {
+		return period;
+	}
+
+	public void setPeriod(long period) {
+		this.period = period;
 	}
 
 	public Colour getBackground() {

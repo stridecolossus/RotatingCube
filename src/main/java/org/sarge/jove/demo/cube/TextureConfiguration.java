@@ -43,7 +43,7 @@ public class TextureConfiguration {
 		// Determine image format
 		final VkFormat format = FormatBuilder.format(image.layout());
 //		final VkFormat format = VkFormat.R8G8B8A8_UNORM;
-//		System.out.println("*********** format="+format);
+//System.err.println("IMAGE="+format);
 
 		// Create descriptor
 		final ImageDescriptor descriptor = new ImageDescriptor.Builder()
