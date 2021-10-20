@@ -1,13 +1,13 @@
 package org.sarge.jove.demo.cube;
 
 import java.io.IOException;
+import java.util.function.Function;
 
 import org.sarge.jove.common.Rectangle;
 import org.sarge.jove.model.Model;
 import org.sarge.jove.platform.vulkan.VkShaderStage;
 import org.sarge.jove.platform.vulkan.core.LogicalDevice;
 import org.sarge.jove.platform.vulkan.core.Shader;
-import org.sarge.jove.platform.vulkan.core.Shader.ShaderLoader;
 import org.sarge.jove.platform.vulkan.pipeline.Pipeline;
 import org.sarge.jove.platform.vulkan.pipeline.PipelineLayout;
 import org.sarge.jove.platform.vulkan.render.DescriptorSet;
@@ -21,21 +21,21 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 class PipelineConfiguration {
 	private final LogicalDevice dev;
-	private final ResourceLoader<String, Shader> loader;
+	private final Function<String, Shader> loader;
 
 	public PipelineConfiguration(LogicalDevice dev, DataSource src) {
 		this.dev = dev;
-		this.loader = ResourceLoader.of(src, new ShaderLoader(dev));
+		this.loader = ResourceLoader.of(src, new Shader.Loader(dev));
 	}
 
 	@Bean
 	public Shader vertex() throws IOException {
-		return loader.load("spv.cube.vert");
+		return loader.apply("spv.cube.vert");
 	}
 
 	@Bean
 	public Shader fragment() throws IOException {
-		return loader.load("spv.cube.frag");
+		return loader.apply("spv.cube.frag");
 	}
 
 	@Bean

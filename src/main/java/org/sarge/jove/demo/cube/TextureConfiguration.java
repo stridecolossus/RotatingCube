@@ -38,7 +38,7 @@ public class TextureConfiguration {
 	public View texture(AllocationService allocator, DataSource src, Pool graphics) throws IOException {
 		// Load texture image
 		final var loader = ResourceLoader.of(src, new ImageData.Loader());
-		final ImageData image = loader.load("thiswayup.jpg");
+		final ImageData image = loader.apply("thiswayup.jpg");
 
 		// Determine image format
 		final VkFormat format = FormatBuilder.format(image.layout());

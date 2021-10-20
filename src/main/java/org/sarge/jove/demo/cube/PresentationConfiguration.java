@@ -5,9 +5,11 @@ import static java.util.stream.Collectors.toList;
 import java.util.List;
 
 import org.sarge.jove.common.Dimensions;
+import org.sarge.jove.platform.vulkan.VkAccess;
 import org.sarge.jove.platform.vulkan.VkAttachmentLoadOp;
 import org.sarge.jove.platform.vulkan.VkAttachmentStoreOp;
 import org.sarge.jove.platform.vulkan.VkImageLayout;
+import org.sarge.jove.platform.vulkan.VkPipelineStage;
 import org.sarge.jove.platform.vulkan.VkPresentModeKHR;
 import org.sarge.jove.platform.vulkan.core.LogicalDevice;
 import org.sarge.jove.platform.vulkan.core.Surface;
@@ -47,6 +49,15 @@ class PresentationConfiguration {
 		return new RenderPass.Builder()
 				.subpass()
 					.colour(attachment, VkImageLayout.COLOR_ATTACHMENT_OPTIMAL)
+					.build()
+				.dependency()
+					.source(RenderPass.VK_SUBPASS_EXTERNAL)
+						.stage(VkPipelineStage.COLOR_ATTACHMENT_OUTPUT)
+						.build()
+					.destination(0)
+						.stage(VkPipelineStage.COLOR_ATTACHMENT_OUTPUT)
+						.access(VkAccess.COLOR_ATTACHMENT_WRITE)
+						.build()
 					.build()
 				.build(dev);
 	}

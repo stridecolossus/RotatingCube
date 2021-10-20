@@ -14,22 +14,30 @@ class DesktopConfiguration {
 	@Bean
 	public static Desktop desktop() {
 		final Desktop desktop = Desktop.create();
+		desktop.setErrorHandler(System.err::println);
 		if(!desktop.isVulkanSupported()) throw new RuntimeException("Vulkan not supported");
 		return desktop;
 	}
 
 	@Bean
 	public static Window window(Desktop desktop, ApplicationConfiguration cfg) {
-		return new Window.Builder()
+		final Window.Descriptor descriptor = new Window.Descriptor.Builder()
 				.title(cfg.getTitle())
 				.size(new Dimensions(1024, 768))
 				.property(Window.Property.DISABLE_OPENGL)
-				.build(desktop);
+				.build();
+
+		return Window.create(desktop, descriptor, null);
 	}
 
 	@Bean
 	public static Surface surface(Instance instance, Window window) {
 		final Handle handle = window.surface(instance.handle());
 		return new Surface(handle, instance);
+	}
+
+	@Bean
+	public static Runnable poll(Desktop desktop) {
+		return desktop::poll;
 	}
 }
