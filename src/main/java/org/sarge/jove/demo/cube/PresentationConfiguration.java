@@ -16,6 +16,8 @@ import org.sarge.jove.platform.vulkan.core.Surface;
 import org.sarge.jove.platform.vulkan.render.Attachment;
 import org.sarge.jove.platform.vulkan.render.FrameBuffer;
 import org.sarge.jove.platform.vulkan.render.RenderPass;
+import org.sarge.jove.platform.vulkan.render.Subpass;
+import org.sarge.jove.platform.vulkan.render.Subpass.Reference;
 import org.sarge.jove.platform.vulkan.render.Swapchain;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -45,21 +47,23 @@ class PresentationConfiguration {
 				.finalLayout(VkImageLayout.PRESENT_SRC_KHR)
 				.build();
 
-		// Create render pass
-		return new RenderPass.Builder()
-				.subpass()
-					.colour(attachment, VkImageLayout.COLOR_ATTACHMENT_OPTIMAL)
-					.build()
+		// Create sub-pass
+		final Subpass subpass = new Subpass.Builder()
+				.colour(new Reference(attachment, VkImageLayout.COLOR_ATTACHMENT_OPTIMAL))
 				.dependency()
-					.source(RenderPass.VK_SUBPASS_EXTERNAL)
+					.subpass(Subpass.EXTERNAL)
+					.source()
 						.stage(VkPipelineStage.COLOR_ATTACHMENT_OUTPUT)
 						.build()
-					.destination(0)
+					.destination()
 						.stage(VkPipelineStage.COLOR_ATTACHMENT_OUTPUT)
 						.access(VkAccess.COLOR_ATTACHMENT_WRITE)
 						.build()
 					.build()
-				.build(dev);
+				.build();
+
+		// Create render pass
+		return RenderPass.create(dev, List.of(subpass));
 	}
 
 	@Bean
