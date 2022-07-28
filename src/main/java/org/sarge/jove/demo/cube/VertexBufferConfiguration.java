@@ -1,68 +1,44 @@
 package org.sarge.jove.demo.cube;
 
-import org.sarge.jove.model.CubeBuilder;
-import org.sarge.jove.model.Model;
-import org.sarge.jove.platform.vulkan.VkBufferUsage;
-import org.sarge.jove.platform.vulkan.VkMemoryProperty;
-import org.sarge.jove.platform.vulkan.common.Command.Pool;
-import org.sarge.jove.platform.vulkan.core.LogicalDevice;
-import org.sarge.jove.platform.vulkan.core.VulkanBuffer;
-import org.sarge.jove.platform.vulkan.memory.AllocationService;
-import org.sarge.jove.platform.vulkan.memory.MemoryProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.sarge.jove.model.*;
+import org.sarge.jove.platform.vulkan.*;
+import org.sarge.jove.platform.vulkan.core.*;
+import org.sarge.jove.platform.vulkan.memory.*;
+import org.springframework.context.annotation.*;
 
 @Configuration
 public class VertexBufferConfiguration {
-	/*
-	private static final Bufferable VERTICES = new Bufferable() {
-		private final Vertex[] vertices = {
-				new Vertex.Builder().position(new Point(-0.5f, +0.5f, 0)).coordinate(Coordinate2D.TOP_LEFT).build(),
-				new Vertex.Builder().position(new Point(-0.5f, -0.5f, 0)).coordinate(Coordinate2D.BOTTOM_LEFT).build(),
-				new Vertex.Builder().position(new Point(+0.5f, +0.5f, 0)).coordinate(Coordinate2D.TOP_RIGHT).build(),
-				new Vertex.Builder().position(new Point(+0.5f, -0.5f, 0)).coordinate(Coordinate2D.BOTTOM_RIGHT).build(),
-		};
-
-		@Override
-		public int length() {
-			return 4 * vertices[0].length();
-		}
-
-		@Override
-		public void buffer(ByteBuffer buffer) {
-			for(Vertex v : vertices) {
-				v.buffer(buffer);
-			}
-		}
-	};
-	*/
-
 	@Bean
 	public static Model cube() {
+		// TODO - strip normals and colours
 		return new CubeBuilder().build();
 	}
 
 	@Bean
-	public static VulkanBuffer vbo(LogicalDevice dev, AllocationService allocator, Pool graphics, Model model) {
+	public static Model.Header header(Model model) {
+		return model.header();
+	}
+
+	@Bean
+	public static VertexBuffer vbo(LogicalDevice dev, AllocationService allocator, Model model, Command.Pool graphics) {
 		// Create staging buffer
 		final VulkanBuffer staging = VulkanBuffer.staging(dev, allocator, model.vertices());
 
-		// Init VBO memory properties
-		final MemoryProperties<VkBufferUsage> props = new MemoryProperties.Builder<VkBufferUsage>()
-				.usage(VkBufferUsage.TRANSFER_DST)
-				.usage(VkBufferUsage.VERTEX_BUFFER)
+		// Init VBO properties
+		final var props = new MemoryProperties.Builder<VkBufferUsageFlag>()
+				.usage(VkBufferUsageFlag.TRANSFER_DST)
+				.usage(VkBufferUsageFlag.VERTEX_BUFFER)
 				.required(VkMemoryProperty.DEVICE_LOCAL)
 				.build();
 
+		// Create destination
+		final VulkanBuffer buffer = VulkanBuffer.create(dev, allocator, staging.length(), props);
+
+		// Copy to destination
+		staging.copy(buffer).submitAndWait(graphics);
+		staging.destroy();
+
 		// Create VBO
-		final VulkanBuffer vbo = VulkanBuffer.create(dev, allocator, staging.length(), props);
-
-		// Copy staging to VBO
-		staging.copy(vbo).submitAndWait(graphics);
-
-		// Release staging
-		staging.close();
-
-		return vbo;
+		return new VertexBuffer(buffer);
 	}
 }

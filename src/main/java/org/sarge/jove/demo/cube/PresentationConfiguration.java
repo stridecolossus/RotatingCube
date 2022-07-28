@@ -1,78 +1,50 @@
 package org.sarge.jove.demo.cube;
 
-import static java.util.stream.Collectors.toList;
-
 import java.util.List;
 
-import org.sarge.jove.common.Dimensions;
-import org.sarge.jove.platform.vulkan.VkAccess;
-import org.sarge.jove.platform.vulkan.VkAttachmentLoadOp;
-import org.sarge.jove.platform.vulkan.VkAttachmentStoreOp;
-import org.sarge.jove.platform.vulkan.VkImageLayout;
-import org.sarge.jove.platform.vulkan.VkPipelineStage;
-import org.sarge.jove.platform.vulkan.VkPresentModeKHR;
-import org.sarge.jove.platform.vulkan.core.LogicalDevice;
-import org.sarge.jove.platform.vulkan.core.Surface;
-import org.sarge.jove.platform.vulkan.render.Attachment;
-import org.sarge.jove.platform.vulkan.render.FrameBuffer;
-import org.sarge.jove.platform.vulkan.render.RenderPass;
-import org.sarge.jove.platform.vulkan.render.Subpass;
-import org.sarge.jove.platform.vulkan.render.Subpass.Reference;
-import org.sarge.jove.platform.vulkan.render.Swapchain;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.sarge.jove.common.Handle;
+import org.sarge.jove.platform.vulkan.*;
+import org.sarge.jove.platform.vulkan.core.*;
+import org.sarge.jove.platform.vulkan.render.*;
+import org.springframework.context.annotation.*;
 
 @Configuration
 class PresentationConfiguration {
-	@Autowired private LogicalDevice dev;
-	@Autowired private ApplicationConfiguration cfg;
+	@Bean
+	public static Surface surface(Handle surface, PhysicalDevice dev) {
+		return new Surface(surface, dev);
+	}
 
 	@Bean
-	public Swapchain swapchain(Surface surface) {
+	public static Swapchain swapchain(LogicalDevice dev, Surface surface, ApplicationConfiguration cfg) {
 		return new Swapchain.Builder(dev, surface)
 				.count(cfg.getFrameCount())
 				.clear(cfg.getBackground())
-				.mode(VkPresentModeKHR.MAILBOX_KHR)
 				.build();
 	}
 
 	@Bean
-	public RenderPass pass() {
+	public static RenderPass pass(LogicalDevice dev, Swapchain swapchain) {
 		// Create colour attachment
 		final Attachment attachment = new Attachment.Builder()
-				.format(Swapchain.DEFAULT_FORMAT)
+				.format(swapchain.format())
 				.load(VkAttachmentLoadOp.CLEAR)
 				.store(VkAttachmentStoreOp.STORE)
 				.finalLayout(VkImageLayout.PRESENT_SRC_KHR)
 				.build();
 
-		// Create sub-pass
-		final Subpass subpass = new Subpass.Builder()
-				.colour(new Reference(attachment, VkImageLayout.COLOR_ATTACHMENT_OPTIMAL))
-				.dependency()
-					.subpass(Subpass.EXTERNAL)
-					.source()
-						.stage(VkPipelineStage.COLOR_ATTACHMENT_OUTPUT)
-						.build()
-					.destination()
-						.stage(VkPipelineStage.COLOR_ATTACHMENT_OUTPUT)
-						.access(VkAccess.COLOR_ATTACHMENT_WRITE)
-						.build()
-					.build()
-				.build();
-
 		// Create render pass
+		final Subpass subpass = Subpass.of(attachment);
 		return RenderPass.create(dev, List.of(subpass));
 	}
 
+	// TODO - list?
 	@Bean
-	public static List<FrameBuffer> buffers(Swapchain swapchain, RenderPass pass) {
-		final Dimensions extents = swapchain.extents();
-		return swapchain
-				.views()
-				.stream()
-				.map(view -> FrameBuffer.create(pass, extents, List.of(view)))
-				.collect(toList());
+	public static FrameBuffer frame(Swapchain swapchain, RenderPass pass) {
+		return new FrameBuffer.Builder()
+				.pass(pass)
+				.extents(swapchain.extents())
+				.build(swapchain.attachments())
+				.get(0);
 	}
 }
