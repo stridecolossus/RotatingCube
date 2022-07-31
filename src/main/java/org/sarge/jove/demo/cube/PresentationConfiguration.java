@@ -38,13 +38,13 @@ class PresentationConfiguration {
 		return RenderPass.create(dev, List.of(subpass));
 	}
 
-	// TODO - list?
 	@Bean
-	public static FrameBuffer frame(Swapchain swapchain, RenderPass pass) {
-		return new FrameBuffer.Builder()
-				.pass(pass)
-				.extents(swapchain.extents())
-				.build(swapchain.attachments())
-				.get(0);
+	public static FrameSet frames(Swapchain swapchain, RenderPass pass) {
+		return new FrameSet(swapchain, pass, List.of());
+	}
+
+	@Bean
+	public static FramePresenter presenter(FrameSet frames, RenderSequence seq) {
+		return new FramePresenter(frames, seq);
 	}
 }
