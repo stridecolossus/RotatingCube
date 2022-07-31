@@ -6,10 +6,10 @@ import org.apache.commons.lang3.builder.*;
 import org.sarge.jove.common.TransientObject;
 import org.sarge.jove.io.*;
 import org.sarge.jove.platform.desktop.*;
-import org.sarge.jove.platform.desktop.DesktopLibraryDevice.KeyListener;
 import org.sarge.jove.platform.vulkan.core.LogicalDevice;
 import org.sarge.jove.platform.vulkan.render.FramePresenter;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.DestructionAwareBeanPostProcessor;
 import org.springframework.boot.*;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -41,11 +41,9 @@ public class RotatingCubeDemo {
 		};
 	}
 
-	@Bean
-	KeyListener listener(Window window) {
-		final KeyListener listener = (ptr, key, scancode, action, mods) -> running.set(false);
-		window.desktop().library().glfwSetKeyCallback(window, listener);
-		return listener;
+	@Autowired
+	void listener(Window window) {
+		window.keyboard().keyboard().bind(any -> running.set(false));
 	}
 
 	@Bean
@@ -53,7 +51,7 @@ public class RotatingCubeDemo {
 		return new DestructionAwareBeanPostProcessor() {
 			@Override
 			public void postProcessBeforeDestruction(Object bean, String beanName) throws BeansException {
-				if(bean instanceof TransientObject obj) {
+				if(bean instanceof TransientObject obj && !obj.isDestroyed()) {
 					obj.destroy();
 				}
 			}
