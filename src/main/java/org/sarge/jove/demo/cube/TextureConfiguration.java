@@ -36,7 +36,7 @@ public class TextureConfiguration {
 		final ImageDescriptor descriptor = new ImageDescriptor.Builder()
 				.type(VkImageType.TWO_D)
 				.aspect(VkImageAspect.COLOR)
-				.extents(image.extents())
+				.extents(image.size())
 				.format(format)
 				.build();
 

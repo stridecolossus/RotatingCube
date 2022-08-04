@@ -1,13 +1,15 @@
 package org.sarge.jove.demo.cube;
 
+import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.builder.*;
 import org.sarge.jove.common.TransientObject;
+import org.sarge.jove.control.Button;
 import org.sarge.jove.io.*;
 import org.sarge.jove.platform.desktop.*;
 import org.sarge.jove.platform.vulkan.core.LogicalDevice;
-import org.sarge.jove.platform.vulkan.render.FramePresenter;
+import org.sarge.jove.platform.vulkan.render.*;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.DestructionAwareBeanPostProcessor;
@@ -17,7 +19,7 @@ import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 public class RotatingCubeDemo {
-	private final AtomicBoolean running = new AtomicBoolean(true);
+	private final AtomicBoolean running = new AtomicBoolean(true); // TODO - toggle handler
 
 	@Bean
 	public static DataSource classpath() {
@@ -26,15 +28,15 @@ public class RotatingCubeDemo {
 
 	@Bean
 	public static DataSource data() {
-		return new FileDataSource("../Data");
+		return FileDataSource.home(Paths.get("workspace/Demo/Data"));
 	}
 
 	@Bean
-	CommandLineRunner runner(LogicalDevice dev, FramePresenter presenter, Runnable update, Desktop desktop) {
+	CommandLineRunner runner(LogicalDevice dev, FramePresenter presenter, RenderSequence seq, Runnable update, Desktop desktop) {
 		return args -> {
 			while(running.get()) {
 				update.run();
-				presenter.render();
+				presenter.render(seq);
 				desktop.poll();
 			}
 			dev.waitIdle();
@@ -43,7 +45,8 @@ public class RotatingCubeDemo {
 
 	@Autowired
 	void listener(Window window) {
-		window.keyboard().keyboard().bind(any -> running.set(false));
+		window.keyboard().keyboard().bind(Button.handler(() -> running.set(false)));
+		// TODO - messy handler -> Button.handler(running); => specialised toggle handler
 	}
 
 	@Bean

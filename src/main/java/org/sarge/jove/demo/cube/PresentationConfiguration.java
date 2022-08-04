@@ -6,6 +6,7 @@ import org.sarge.jove.common.Handle;
 import org.sarge.jove.platform.vulkan.*;
 import org.sarge.jove.platform.vulkan.core.*;
 import org.sarge.jove.platform.vulkan.render.*;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.*;
 
 @Configuration
@@ -44,7 +45,8 @@ class PresentationConfiguration {
 	}
 
 	@Bean
-	public static FramePresenter presenter(FrameSet frames, RenderSequence seq) {
-		return new FramePresenter(frames, seq);
+	public static FramePresenter presenter(FrameSet frames, @Qualifier("graphics") Command.Pool pool) {
+		final var builder = new FrameBuilder(frames::buffer, pool::allocate, VkCommandBufferUsage.ONE_TIME_SUBMIT);
+		return new FramePresenter(frames.swapchain(), builder, 2);
 	}
 }
