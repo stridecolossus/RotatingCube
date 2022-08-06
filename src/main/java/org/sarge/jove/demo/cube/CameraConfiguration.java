@@ -28,7 +28,7 @@ public class CameraConfiguration {
 	}
 
 	@Bean
-	public static Matrix view() {
+	static Matrix view() {
 		final Matrix trans = new Matrix.Builder()
 				.identity()
 				.column(3, new Vector(0, 0, -2))
@@ -45,7 +45,7 @@ public class CameraConfiguration {
 	}
 
 	@Bean
-	public static Matrix projection(Swapchain swapchain) {
+	static Matrix projection(Swapchain swapchain) {
 		return Projection.DEFAULT.matrix(0.1f, 100, swapchain.extents());
 	}
 

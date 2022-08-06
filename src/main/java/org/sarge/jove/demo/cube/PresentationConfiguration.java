@@ -45,8 +45,8 @@ class PresentationConfiguration {
 	}
 
 	@Bean
-	public static FramePresenter presenter(FrameSet frames, @Qualifier("graphics") Command.Pool pool) {
+	public static FrameProcessor processor(FrameSet frames, @Qualifier("graphics") Command.Pool pool) {
 		final var builder = new FrameBuilder(frames::buffer, pool::allocate, VkCommandBufferUsage.ONE_TIME_SUBMIT);
-		return new FramePresenter(frames.swapchain(), builder, 2);
+		return new FrameProcessor(frames.swapchain(), builder, 2);
 	}
 }

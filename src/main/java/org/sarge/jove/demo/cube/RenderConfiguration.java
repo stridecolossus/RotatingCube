@@ -1,15 +1,11 @@
 package org.sarge.jove.demo.cube;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 import org.sarge.jove.model.Model;
-import org.sarge.jove.platform.vulkan.VkCommandBufferUsage;
 import org.sarge.jove.platform.vulkan.core.*;
-import org.sarge.jove.platform.vulkan.core.Command.Buffer;
 import org.sarge.jove.platform.vulkan.pipeline.*;
 import org.sarge.jove.platform.vulkan.render.*;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.*;
 
 @Configuration
@@ -37,10 +33,5 @@ public class RenderConfiguration {
 	@Bean
 	public static RenderSequence sequence(List<Command> commands) {
 		return RenderSequence.of(commands);
-	}
-
-	@Bean
-	public static Supplier<Buffer> factory(@Qualifier("presentation") Command.Pool pool) {
-		return () -> pool.allocate().begin(VkCommandBufferUsage.ONE_TIME_SUBMIT);
 	}
 }

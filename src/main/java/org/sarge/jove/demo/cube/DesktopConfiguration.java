@@ -27,9 +27,4 @@ class DesktopConfiguration {
 	public static Handle surface(Instance instance, Window window) {
 		return window.surface(instance.handle());
 	}
-
-//	@Bean
-//	public static Runnable poll(Desktop desktop) {
-//		return desktop::poll;
-//	}
 }
