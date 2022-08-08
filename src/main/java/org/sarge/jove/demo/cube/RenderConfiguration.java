@@ -31,7 +31,7 @@ public class RenderConfiguration {
 	}
 
 	@Bean
-	public static RenderSequence sequence(List<Command> commands) {
+	static RenderSequence sequence(List<Command> commands) {
 		return RenderSequence.of(commands);
 	}
 }

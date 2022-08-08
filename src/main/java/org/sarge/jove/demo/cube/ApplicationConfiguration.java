@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 public class ApplicationConfiguration {
 	private String title;
 	private int frames;
+	private int rate;
 	private Colour col = Colour.BLACK;
 	private long period;
 
@@ -28,12 +29,12 @@ public class ApplicationConfiguration {
 		this.frames = frames;
 	}
 
-	public long getPeriod() {
-		return period;
+	public int getFrameRate() {
+		return rate;
 	}
 
-	public void setPeriod(long period) {
-		this.period = period;
+	public void setFrameRate(int rate) {
+		this.rate = rate;
 	}
 
 	public Colour getBackground() {
@@ -42,5 +43,13 @@ public class ApplicationConfiguration {
 
 	public void setBackground(float[] col) {
 		this.col = Colour.of(col);
+	}
+
+	public long getPeriod() {
+		return period;
+	}
+
+	public void setPeriod(long period) {
+		this.period = period;
 	}
 }

@@ -1,7 +1,7 @@
 package org.sarge.jove.demo.cube;
 
 import java.nio.file.Paths;
-import java.util.Collection;
+import java.util.concurrent.*;
 
 import javax.annotation.PreDestroy;
 
@@ -10,21 +10,16 @@ import org.sarge.jove.common.TransientObject;
 import org.sarge.jove.io.*;
 import org.sarge.jove.platform.desktop.*;
 import org.sarge.jove.platform.vulkan.core.LogicalDevice;
-import org.sarge.jove.platform.vulkan.render.*;
-import org.sarge.jove.scene.*;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.DestructionAwareBeanPostProcessor;
 import org.springframework.boot.*;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 public class RotatingCubeDemo {
 	@Autowired private LogicalDevice dev;
-
-	private final RenderLoop loop = new RenderLoop();
 
 	@Bean
 	public static DataSource classpath() {
@@ -37,42 +32,29 @@ public class RotatingCubeDemo {
 	}
 
 	@Bean
-	CommandLineRunner runner(Desktop desktop) {
+	public static ScheduledExecutorService executor() {
+		return Executors.newSingleThreadScheduledExecutor();
+	}
+
+	@Bean
+	static CommandLineRunner runner(Desktop desktop) {
 		return args -> {
-			while(loop.isRunning()) {
+			while(true) {
 				desktop.poll();
-				Thread.sleep(50);
 			}
 		};
 	}
 
-	@Bean("render-task")
-	static Runnable render(FrameProcessor presenter, RenderSequence seq, Collection<FrameCounter.Listener> listeners, Runnable animation) {
-		final Runnable task = () -> {
-			presenter.next().render(seq);
-			animation.run(); // TODO
-		};
-		final FrameCounter counter = new FrameCounter(task);
-		listeners.forEach(counter::add);
-//		counter.add((time, elapsed) -> System.out.println(counter));
-		return counter;
-	}
-
-	@Autowired
-	void start(@Qualifier("render-task") Runnable render) {
-		loop.start(render);
-	}
-
 	@PreDestroy
 	void destroy() {
-		loop.close();
 		dev.waitIdle();
 	}
 
 	@SuppressWarnings("static-method")
 	@Autowired
-	void listener(Window window, ApplicationContext ctx) {
-		window.keyboard().keyboard().bind(button -> SpringApplication.exit(ctx));
+	void listener(Window window) {
+		window.keyboard().keyboard().bind(button -> System.exit(0));
+		//SpringApplication.exit(ctx));
 		//Button.handler(loop::stop));
 		// TODO - messy handler -> Button.handler(running); => specialised toggle handler
 	}

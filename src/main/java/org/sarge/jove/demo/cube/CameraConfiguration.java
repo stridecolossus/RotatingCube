@@ -2,6 +2,7 @@ package org.sarge.jove.demo.cube;
 
 import java.nio.ByteBuffer;
 
+import org.sarge.jove.control.*;
 import org.sarge.jove.geometry.*;
 import org.sarge.jove.platform.vulkan.*;
 import org.sarge.jove.platform.vulkan.core.*;
@@ -50,17 +51,29 @@ public class CameraConfiguration {
 	}
 
 	@Bean
-	public static Runnable animation(Matrix projection, Matrix view, ResourceBuffer uniform) {
-		final long period = 2000;
-		final ByteBuffer bb = uniform.buffer();
-		return () -> {
-			// Build rotation matrix
-			final float angle = (System.currentTimeMillis() % period) * MathsUtil.TWO_PI / period;
-			final Matrix h = Rotation.matrix(Vector.Y, angle);
-			final Matrix v = Rotation.matrix(Vector.X, MathsUtil.toRadians(30));
-			final Matrix model = h.multiply(v);
+	static RotationAnimation rotation() {
+		return new RotationAnimation(new Vector(MathsUtil.HALF, 1, 0).normalize());
+	}
 
-			// Update matrix
+	@Bean
+	static Animator animator(ApplicationConfiguration cfg, RotationAnimation rot) {
+		return new Animator(cfg.getPeriod(), rot);
+	}
+
+	@Bean
+	public static Player player(Animator animator) {
+		final Player player = new Player();
+		player.add(animator);
+		player.state(Playable.State.PLAY);
+		player.repeat(true);
+		return player;
+	}
+
+	@Bean
+	public static FrameListener update(ResourceBuffer uniform, Matrix projection, Matrix view, RotationAnimation rot) {
+		final ByteBuffer bb = uniform.buffer();
+		return (time, elapsed) -> {
+			final Matrix model = rot.rotation().matrix();
 			final Matrix matrix = projection.multiply(view).multiply(model);
 			matrix.buffer(bb);
 			bb.rewind();
