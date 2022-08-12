@@ -50,7 +50,6 @@ public class RotatingCubeDemo {
 		dev.waitIdle();
 	}
 
-	@SuppressWarnings("static-method")
 	@Autowired
 	void listener(Window window) {
 		window.keyboard().keyboard().bind(button -> System.exit(0));

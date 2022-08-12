@@ -40,8 +40,11 @@ class PresentationConfiguration {
 				.build();
 
 		// Create render pass
-		final Subpass subpass = Subpass.of(attachment);
-		return RenderPass.create(dev, List.of(subpass));
+		return new RenderPass.Builder()
+				.subpass()
+					.colour(attachment)
+					.build()
+				.build(dev);
 	}
 
 	@Bean
