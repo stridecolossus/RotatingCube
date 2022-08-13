@@ -6,6 +6,7 @@ import org.sarge.jove.platform.vulkan.*;
 import org.sarge.jove.platform.vulkan.core.LogicalDevice;
 import org.sarge.jove.platform.vulkan.image.*;
 import org.sarge.jove.platform.vulkan.render.*;
+import org.sarge.jove.platform.vulkan.render.DescriptorLayout.Binding;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 
@@ -14,13 +15,13 @@ public class DescriptorConfiguration {
 	@Autowired private LogicalDevice dev;
 	@Autowired private ApplicationConfiguration cfg;
 
-	private final ResourceBinding samplerBinding = new ResourceBinding.Builder()
+	private final Binding samplerBinding = new Binding.Builder()
 			.binding(0)
 			.type(VkDescriptorType.COMBINED_IMAGE_SAMPLER)
 			.stage(VkShaderStage.FRAGMENT)
 			.build();
 
-	private final ResourceBinding uniformBinding = new ResourceBinding.Builder()
+	private final Binding uniformBinding = new Binding.Builder()
 		    .binding(1)
 		    .type(VkDescriptorType.UNIFORM_BUFFER)
 		    .stage(VkShaderStage.VERTEX)
@@ -43,7 +44,7 @@ public class DescriptorConfiguration {
 
 	@Bean
 	public DescriptorSet descriptor(DescriptorPool pool, DescriptorLayout layout, Sampler sampler, View texture, ResourceBuffer uniform) {
-		final DescriptorSet set = pool.allocate(layout, 1).get(0);
+		final DescriptorSet set = pool.allocate(1, List.of(layout)).iterator().next();
 		set.set(samplerBinding, sampler.resource(texture));
 		set.set(uniformBinding, uniform);
 		DescriptorSet.update(dev, List.of(set));

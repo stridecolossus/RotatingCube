@@ -21,6 +21,7 @@ public class CameraConfiguration {
 				.usage(VkBufferUsageFlag.UNIFORM_BUFFER)
 				.required(VkMemoryProperty.HOST_VISIBLE)
 				.required(VkMemoryProperty.HOST_COHERENT)
+				.copy()
 				.build();
 
 		// Create uniform buffer

@@ -6,6 +6,7 @@ import org.sarge.jove.io.*;
 import org.sarge.jove.platform.vulkan.*;
 import org.sarge.jove.platform.vulkan.core.*;
 import org.sarge.jove.platform.vulkan.image.*;
+import org.sarge.jove.platform.vulkan.image.Image.Descriptor;
 import org.sarge.jove.platform.vulkan.memory.*;
 import org.sarge.jove.platform.vulkan.pipeline.Barrier;
 import org.sarge.jove.platform.vulkan.util.FormatBuilder;
@@ -33,7 +34,7 @@ public class TextureConfiguration {
 //System.err.println("IMAGE="+format);
 
 		// Create descriptor
-		final ImageDescriptor descriptor = new ImageDescriptor.Builder()
+		final Descriptor descriptor = new Descriptor.Builder()
 				.type(VkImageType.TWO_D)
 				.aspect(VkImageAspect.COLOR)
 				.extents(image.size())
@@ -45,10 +46,11 @@ public class TextureConfiguration {
 				.usage(VkImageUsageFlag.TRANSFER_DST)
 				.usage(VkImageUsageFlag.SAMPLED)
 				.required(VkMemoryProperty.DEVICE_LOCAL)
+				.copy()
 				.build();
 
 		// Create texture
-		final Image texture = new Image.Builder()
+		final Image texture = new DefaultImage.Builder()
 				.descriptor(descriptor)
 				.properties(props)
 				.build(dev, allocator);
@@ -62,19 +64,19 @@ public class TextureConfiguration {
 					.destination(VkAccess.TRANSFER_WRITE)
 					.build()
 				.build()
-				.submitAndWait(graphics);
+				.submit(graphics);
 
 		// Create staging buffer
 		final VulkanBuffer staging = VulkanBuffer.staging(dev, allocator, image.data());
 
 		// Copy staging to texture
 		new ImageCopyCommand.Builder()
-				.image(texture)
 				.buffer(staging)
+				.image(texture)
 				.layout(VkImageLayout.TRANSFER_DST_OPTIMAL)
 				.region(image)
 				.build()
-				.submitAndWait(graphics);
+				.submit(graphics);
 
 		// Release staging
 		staging.destroy();
@@ -90,7 +92,7 @@ public class TextureConfiguration {
 				.destination(VkAccess.SHADER_READ)
 				.build()
 			.build()
-			.submitAndWait(graphics);
+			.submit(graphics);
 
 		// Create texture view
 		return new View.Builder(texture)

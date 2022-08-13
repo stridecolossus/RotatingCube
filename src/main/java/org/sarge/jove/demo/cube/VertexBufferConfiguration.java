@@ -29,13 +29,14 @@ public class VertexBufferConfiguration {
 				.usage(VkBufferUsageFlag.TRANSFER_DST)
 				.usage(VkBufferUsageFlag.VERTEX_BUFFER)
 				.required(VkMemoryProperty.DEVICE_LOCAL)
+				.copy()
 				.build();
 
 		// Create destination
 		final VulkanBuffer buffer = VulkanBuffer.create(dev, allocator, staging.length(), props);
 
 		// Copy to destination
-		staging.copy(buffer).submitAndWait(graphics);
+		staging.copy(buffer).submit(graphics);
 		staging.destroy();
 
 		// Create VBO
