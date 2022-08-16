@@ -23,10 +23,10 @@ class PresentationConfiguration {
 
 	@Bean
 	public Swapchain swapchain(LogicalDevice dev, Surface surface) {
-		return new Swapchain.Builder(dev, surface)
+		return new Swapchain.Builder(surface)
 				.count(cfg.getFrameCount())
 				.clear(cfg.getBackground())
-				.build();
+				.build(dev);
 	}
 
 	@Bean
