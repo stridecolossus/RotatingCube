@@ -66,7 +66,7 @@ public class CameraConfiguration {
 		final Player player = new Player();
 		player.add(animator);
 		player.state(Playable.State.PLAY);
-		player.repeat(true);
+		animator.repeat(true);
 		return player;
 	}
 
