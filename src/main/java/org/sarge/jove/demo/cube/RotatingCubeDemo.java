@@ -50,12 +50,24 @@ public class RotatingCubeDemo {
 		dev.waitIdle();
 	}
 
+//	@Autowired
+//	void screenshot(Window window, Swapchain swapchain, AllocationService allocator, Command.Pool graphics) {
+//		final Consumer<Button<?>> task = button -> {
+//			if(button.action() != Button.Action.PRESS) {
+//				return;
+//			}
+//
+//			final CaptureTask helper = new CaptureTask(allocator, graphics);
+//			final Image screenshot = helper.capture(swapchain);
+//			System.out.println(screenshot);
+////			System.exit(0);
+//		};
+//		window.keyboard().keyboard().bind(task::accept);
+//	}
+
 	@Autowired
 	void listener(Window window) {
 		window.keyboard().keyboard().bind(button -> System.exit(0));
-		//SpringApplication.exit(ctx));
-		//Button.handler(loop::stop));
-		// TODO - messy handler -> Button.handler(running); => specialised toggle handler
 	}
 
 	@Bean

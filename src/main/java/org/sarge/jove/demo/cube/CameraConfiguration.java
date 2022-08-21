@@ -71,9 +71,9 @@ public class CameraConfiguration {
 	}
 
 	@Bean
-	public static FrameListener update(ResourceBuffer uniform, Matrix projection, Matrix view, RotationAnimation rot) {
+	public static Frame.Listener update(ResourceBuffer uniform, Matrix projection, Matrix view, RotationAnimation rot) {
 		final ByteBuffer bb = uniform.buffer();
-		return (time, elapsed) -> {
+		return frame -> {
 			final Matrix model = rot.rotation().matrix();
 			final Matrix matrix = projection.multiply(view).multiply(model);
 			matrix.buffer(bb);
