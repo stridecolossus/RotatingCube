@@ -15,11 +15,6 @@ public class VertexBufferConfiguration {
 	}
 
 	@Bean
-	public static Model.Header header(Model model) {
-		return model.header();
-	}
-
-	@Bean
 	public static VertexBuffer vbo(LogicalDevice dev, AllocationService allocator, Model model, Command.Pool graphics) {
 		// Create staging buffer
 		final VulkanBuffer staging = VulkanBuffer.staging(dev, allocator, model.vertices());

@@ -1,5 +1,7 @@
 package org.sarge.jove.demo.cube;
 
+import java.time.Duration;
+
 import org.sarge.jove.common.Colour;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -11,7 +13,7 @@ public class ApplicationConfiguration {
 	private int frames;
 	private int rate;
 	private Colour col = Colour.BLACK;
-	private long period;
+	private Duration period;
 
 	public String getTitle() {
 		return title;
@@ -45,11 +47,11 @@ public class ApplicationConfiguration {
 		this.col = Colour.of(col);
 	}
 
-	public long getPeriod() {
+	public Duration getPeriod() {
 		return period;
 	}
 
-	public void setPeriod(long period) {
+	public void setPeriod(Duration period) {
 		this.period = period;
 	}
 }

@@ -52,13 +52,14 @@ public class CameraConfiguration {
 	}
 
 	@Bean
-	static RotationAnimation rotation() {
-		return new RotationAnimation(new Vector(MathsUtil.HALF, 1, 0).normalize());
+	static RotationAnimation rotation(ApplicationConfiguration cfg) {
+		final Vector axis = new Vector(MathsUtil.HALF, 1, 0).normalize();
+		return new RotationAnimation(axis, cfg.getPeriod());
 	}
 
 	@Bean
-	static Animator animator(ApplicationConfiguration cfg, RotationAnimation rot) {
-		return new Animator(cfg.getPeriod(), rot);
+	static Animator animator(RotationAnimation rot) {
+		return new Animator(rot);
 	}
 
 	@Bean
@@ -66,14 +67,13 @@ public class CameraConfiguration {
 		final Player player = new Player();
 		player.add(animator);
 		player.state(Playable.State.PLAY);
-		animator.repeat(true);
 		return player;
 	}
 
 	@Bean
 	public static Frame.Listener update(ResourceBuffer uniform, Matrix projection, Matrix view, RotationAnimation rot) {
 		final ByteBuffer bb = uniform.buffer();
-		return frame -> {
+		return () -> {
 			final Matrix model = rot.rotation().matrix();
 			final Matrix matrix = projection.multiply(view).multiply(model);
 			matrix.buffer(bb);
