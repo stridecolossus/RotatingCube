@@ -6,7 +6,7 @@ import org.sarge.jove.control.*;
 import org.sarge.jove.geometry.*;
 import org.sarge.jove.platform.vulkan.*;
 import org.sarge.jove.platform.vulkan.core.*;
-import org.sarge.jove.platform.vulkan.memory.*;
+import org.sarge.jove.platform.vulkan.memory.MemoryProperties;
 import org.sarge.jove.platform.vulkan.render.*;
 import org.sarge.jove.scene.Projection;
 import org.sarge.jove.util.MathsUtil;
@@ -15,17 +15,17 @@ import org.springframework.context.annotation.*;
 @Configuration
 public class CameraConfiguration {
 	@Bean
-	public static ResourceBuffer uniform(LogicalDevice dev, AllocationService allocator) {
+	public static ResourceBuffer uniform(LogicalDevice dev) {
 		// Specify uniform buffer
 		final var props = new MemoryProperties.Builder<VkBufferUsageFlag>()
 				.usage(VkBufferUsageFlag.UNIFORM_BUFFER)
 				.required(VkMemoryProperty.HOST_VISIBLE)
 				.required(VkMemoryProperty.HOST_COHERENT)
-				.copy()
+				.optimal(VkMemoryProperty.DEVICE_LOCAL)
 				.build();
 
 		// Create uniform buffer
-		final VulkanBuffer buffer = VulkanBuffer.create(dev, allocator, Matrix.IDENTITY.length(), props);
+		final VulkanBuffer buffer = VulkanBuffer.create(dev, Matrix.IDENTITY.length(), props);
 		return new ResourceBuffer(buffer, VkDescriptorType.UNIFORM_BUFFER, 0);
 	}
 
