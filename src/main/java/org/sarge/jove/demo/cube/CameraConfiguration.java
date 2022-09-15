@@ -38,9 +38,9 @@ public class CameraConfiguration {
 
 		final Matrix rot = new Matrix.Builder()
 				.identity()
-				.row(0, Vector.X)
-			    .row(1, Vector.Y.invert())
-			    .row(2, Vector.Z)
+				.row(0, Axis.X)
+			    .row(1, Axis.Y.invert())
+			    .row(2, Axis.Z)
 			    .build();
 
 		return rot.multiply(trans);
@@ -52,21 +52,20 @@ public class CameraConfiguration {
 	}
 
 	@Bean
-	static RotationAnimation rotation(ApplicationConfiguration cfg) {
-		final Vector axis = new Vector(MathsUtil.HALF, 1, 0).normalize();
-		return new RotationAnimation(axis, cfg.getPeriod());
+	static RotationAnimation rotation() {
+		return new RotationAnimation(new Vector(MathsUtil.HALF, 1, 0));
 	}
 
 	@Bean
-	static Animator animator(RotationAnimation rot) {
-		return new Animator(rot);
+	static Animator animator(RotationAnimation rot, ApplicationConfiguration cfg) {
+		return new BoundAnimator(rot, cfg.getPeriod());
 	}
 
 	@Bean
 	public static Player player(Animator animator) {
 		final Player player = new Player();
 		player.add(animator);
-		player.state(Playable.State.PLAY);
+		player.play();
 		return player;
 	}
 
