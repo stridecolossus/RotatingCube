@@ -6,7 +6,7 @@ import org.sarge.jove.platform.vulkan.*;
 import org.sarge.jove.platform.vulkan.core.LogicalDevice;
 import org.sarge.jove.platform.vulkan.image.*;
 import org.sarge.jove.platform.vulkan.render.*;
-import org.sarge.jove.platform.vulkan.render.DescriptorLayout.Binding;
+import org.sarge.jove.platform.vulkan.render.DescriptorSet.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 
@@ -28,14 +28,14 @@ public class DescriptorConfiguration {
 		    .build();
 
 	@Bean
-	public DescriptorLayout layout() {
-		return DescriptorLayout.create(dev, List.of(samplerBinding, uniformBinding));
+	public Layout layout() {
+		return Layout.create(dev, List.of(samplerBinding, uniformBinding));
 	}
 
 	@Bean
-	public DescriptorPool pool() {
+	public Pool pool() {
 		final int count = cfg.getFrameCount();
-		return new DescriptorPool.Builder()
+		return new Pool.Builder()
 				.add(VkDescriptorType.COMBINED_IMAGE_SAMPLER, count)
 				.add(VkDescriptorType.UNIFORM_BUFFER, count)
 				.max(count)
@@ -43,7 +43,7 @@ public class DescriptorConfiguration {
 	}
 
 	@Bean
-	public DescriptorSet descriptor(DescriptorPool pool, DescriptorLayout layout, Sampler sampler, View texture, ResourceBuffer uniform) {
+	public DescriptorSet descriptor(Pool pool, Layout layout, Sampler sampler, View texture, ResourceBuffer uniform) {
 		final DescriptorSet set = pool.allocate(layout).iterator().next();
 		set.set(samplerBinding, sampler.resource(texture));
 		set.set(uniformBinding, uniform);

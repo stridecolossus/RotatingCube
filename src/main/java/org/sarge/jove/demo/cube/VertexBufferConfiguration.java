@@ -9,15 +9,16 @@ import org.springframework.context.annotation.*;
 @Configuration
 public class VertexBufferConfiguration {
 	@Bean
-	public static Model cube() {
+	public static DefaultMesh cube() {
 		// TODO - strip normals and colours
 		return new CubeBuilder().build();
 	}
 
 	@Bean
-	public static VertexBuffer vbo(LogicalDevice dev, Model model, Command.Pool graphics) {
+	public static VertexBuffer vbo(LogicalDevice dev, DefaultMesh cube, Command.Pool graphics) {
 		// Create staging buffer
-		final VulkanBuffer staging = VulkanBuffer.staging(dev, model.vertices());
+		final var vertices = cube.buffer().vertices();
+		final VulkanBuffer staging = VulkanBuffer.staging(dev, vertices);
 
 		// Init VBO properties
 		final var props = new MemoryProperties.Builder<VkBufferUsageFlag>()

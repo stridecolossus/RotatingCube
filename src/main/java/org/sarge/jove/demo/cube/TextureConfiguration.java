@@ -95,7 +95,7 @@ public class TextureConfiguration {
 
 		// Create texture view
 		return new View.Builder(texture)
-				.mapping(ComponentMapping.of(image.components()))
+				.mapping(ComponentMapping.of(image.channels()))
 				.build();
 	}
 }

@@ -2,7 +2,7 @@ package org.sarge.jove.demo.cube;
 
 import java.util.List;
 
-import org.sarge.jove.model.Model;
+import org.sarge.jove.model.Mesh;
 import org.sarge.jove.platform.vulkan.core.*;
 import org.sarge.jove.platform.vulkan.pipeline.*;
 import org.sarge.jove.platform.vulkan.render.*;
@@ -26,8 +26,8 @@ public class RenderConfiguration {
 	}
 
 	@Bean
-	static DrawCommand draw(Model model) {
-		return DrawCommand.of(model);
+	static DrawCommand draw(Mesh cube) {
+		return DrawCommand.of(cube);
 	}
 
 	@Bean

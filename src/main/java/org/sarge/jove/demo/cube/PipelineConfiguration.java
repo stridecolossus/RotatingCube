@@ -4,7 +4,7 @@ import java.io.*;
 
 import org.sarge.jove.common.Rectangle;
 import org.sarge.jove.io.*;
-import org.sarge.jove.model.Model;
+import org.sarge.jove.model.Mesh;
 import org.sarge.jove.platform.vulkan.VkShaderStage;
 import org.sarge.jove.platform.vulkan.core.LogicalDevice;
 import org.sarge.jove.platform.vulkan.pipeline.*;
@@ -32,26 +32,24 @@ class PipelineConfiguration {
 	}
 
 	@Bean
-	PipelineLayout pipelineLayout(DescriptorLayout layout) {
+	PipelineLayout pipelineLayout(DescriptorSet.Layout layout) {
 		return new PipelineLayout.Builder()
 				.add(layout)
 				.build(dev);
 	}
 
 	@Bean
-	public Pipeline pipeline(RenderPass pass, Swapchain swapchain, Shader vertex, Shader fragment, PipelineLayout layout, Model model) {
-		return new Pipeline.Builder()
-				.layout(layout)
-				.pass(pass)
+	public Pipeline pipeline(RenderPass pass, Swapchain swapchain, Shader vertex, Shader fragment, PipelineLayout layout, Mesh cube) {
+		return new GraphicsPipelineBuilder(pass)
 				.viewport(new Rectangle(swapchain.extents()))
-				.shader(VkShaderStage.VERTEX, vertex)
-				.shader(VkShaderStage.FRAGMENT, fragment)
+				.shader(new ProgrammableShaderStage(VkShaderStage.VERTEX, vertex))
+				.shader(new ProgrammableShaderStage(VkShaderStage.FRAGMENT, fragment))
 				.input()
-					.add(model.layout())
+					.add(cube.layout())
 					.build()
 				.assembly()
-					.topology(model.primitive())
+					.topology(cube.primitive())
 					.build()
-				.build(null, dev);
+				.build(dev, layout);
 	}
 }

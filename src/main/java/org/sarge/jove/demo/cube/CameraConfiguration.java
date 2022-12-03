@@ -8,7 +8,7 @@ import org.sarge.jove.platform.vulkan.*;
 import org.sarge.jove.platform.vulkan.core.*;
 import org.sarge.jove.platform.vulkan.memory.MemoryProperties;
 import org.sarge.jove.platform.vulkan.render.*;
-import org.sarge.jove.scene.Projection;
+import org.sarge.jove.scene.core.Projection;
 import org.sarge.jove.util.MathsUtil;
 import org.springframework.context.annotation.*;
 
@@ -25,7 +25,7 @@ public class CameraConfiguration {
 				.build();
 
 		// Create uniform buffer
-		final VulkanBuffer buffer = VulkanBuffer.create(dev, Matrix.IDENTITY.length(), props);
+		final VulkanBuffer buffer = VulkanBuffer.create(dev, Matrix4.LENGTH, props);
 		return new ResourceBuffer(buffer, VkDescriptorType.UNIFORM_BUFFER, 0);
 	}
 
@@ -53,7 +53,8 @@ public class CameraConfiguration {
 
 	@Bean
 	static RotationAnimation rotation() {
-		return new RotationAnimation(new Vector(MathsUtil.HALF, 1, 0));
+		final Normal axis = new Vector(MathsUtil.HALF, 1, 0).normalize();
+		return new RotationAnimation(axis);
 	}
 
 	@Bean
