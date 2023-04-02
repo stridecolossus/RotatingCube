@@ -1,14 +1,12 @@
 package org.sarge.jove.demo.cube;
 
 import java.util.*;
-import java.util.concurrent.ScheduledExecutorService;
 
 import org.sarge.jove.common.Handle;
 import org.sarge.jove.control.Frame;
-import org.sarge.jove.platform.vulkan.*;
+import org.sarge.jove.platform.vulkan.VkImageUsageFlag;
 import org.sarge.jove.platform.vulkan.core.*;
 import org.sarge.jove.platform.vulkan.render.*;
-import org.sarge.jove.platform.vulkan.render.FrameBuffer.Group;
 import org.sarge.jove.scene.core.RenderLoop;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.context.annotation.*;
@@ -23,43 +21,41 @@ class PresentationConfiguration {
 	}
 
 	@Bean
-	public Swapchain swapchain(LogicalDevice dev, Surface surface) {
-		return new Swapchain.Builder(surface)
+	SwapchainAdapter adapter(Surface surface, RenderPass pass) {
+		final var swapchain = new Swapchain.Builder(surface)
 				.count(cfg.getFrameCount())
 				.clear(cfg.getBackground())
-				.usage(VkImageUsageFlag.TRANSFER_SRC)
-				.build(dev);
+				.usage(VkImageUsageFlag.TRANSFER_SRC);
+
+		return new SwapchainAdapter(swapchain, pass, List.of());
 	}
 
 	@Bean
-	public static RenderPass pass(LogicalDevice dev, Swapchain swapchain) {
-		final Attachment attachment = Attachment.colour(swapchain.format());
+	public static RenderPass pass(LogicalDevice dev) {
+		final var surfaceFormat = Surface.defaultSurfaceFormat();
+		final Attachment attachment = Attachment.colour(surfaceFormat.format);
 		return new Subpass().colour(attachment).create(dev);
 	}
 
 	@Bean
-	static Group frames(Swapchain swapchain, RenderPass pass) {
-		return new Group(swapchain, pass, List.of());
+	static FrameComposer composer(@Qualifier("graphics") Command.Pool pool, Command.Sequence sequence) {
+		return new FrameComposer(pool, sequence);
 	}
 
 	@Bean
-	static FrameBuilder builder(Group group, @Qualifier("graphics") Command.Pool pool) {
-		return new FrameBuilder(group::buffer, pool::allocate, VkCommandBufferUsage.ONE_TIME_SUBMIT);
+	VulkanRenderTask render(FrameComposer composer, SwapchainAdapter swapchain, LogicalDevice dev) {
+		final VulkanFrame[] frames = VulkanFrame.array(cfg.getFrameCount(), () -> DefaultVulkanFrame.create(dev));
+		return new VulkanRenderTask(composer, swapchain, frames);
 	}
 
 	@Bean
-	FrameProcessor processor(Swapchain swapchain, FrameBuilder builder, Collection<Frame.Listener> listeners) {
-		final var proc = new FrameProcessor(swapchain, builder, cfg.getFrameCount());
-		listeners.forEach(proc::add);
-		return proc;
-	}
-
-	@Bean
-	public RenderLoop loop(ScheduledExecutorService executor, FrameProcessor proc, RenderSequence seq) {
-		final Runnable task = () -> proc.render(seq);
-		final RenderLoop loop = new RenderLoop(executor);
+	public RenderLoop loop(VulkanRenderTask task, Collection<Frame.Listener> listeners, ApplicationConfiguration cfg) {
+		final var loop = new RenderLoop();
 		loop.rate(cfg.getFrameRate());
-		loop.start(task);
+		loop.start(task::render);
+		for(var listener : listeners) {
+			loop.add(listener);
+		}
 		return loop;
 	}
 }

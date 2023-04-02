@@ -1,7 +1,6 @@
 package org.sarge.jove.demo.cube;
 
 import java.nio.file.Paths;
-import java.util.concurrent.*;
 
 import javax.annotation.PreDestroy;
 
@@ -10,6 +9,7 @@ import org.sarge.jove.common.TransientObject;
 import org.sarge.jove.io.*;
 import org.sarge.jove.platform.desktop.*;
 import org.sarge.jove.platform.vulkan.core.LogicalDevice;
+import org.sarge.jove.scene.core.RenderLoop;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.DestructionAwareBeanPostProcessor;
@@ -20,6 +20,7 @@ import org.springframework.context.annotation.Bean;
 @SpringBootApplication
 public class RotatingCubeDemo {
 	@Autowired private LogicalDevice dev;
+	@Autowired private RenderLoop loop;
 
 	@Bean
 	public static DataSource classpath() {
@@ -29,11 +30,6 @@ public class RotatingCubeDemo {
 	@Bean
 	public static DataSource data() {
 		return FileDataSource.home(Paths.get("workspace/Demo/Data"));
-	}
-
-	@Bean
-	public static ScheduledExecutorService executor() {
-		return Executors.newSingleThreadScheduledExecutor();
 	}
 
 	@Bean
@@ -47,6 +43,7 @@ public class RotatingCubeDemo {
 
 	@PreDestroy
 	void destroy() {
+		loop.stop();
 		dev.waitIdle();
 	}
 

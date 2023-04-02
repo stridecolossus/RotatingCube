@@ -39,9 +39,9 @@ class PipelineConfiguration {
 	}
 
 	@Bean
-	public Pipeline pipeline(RenderPass pass, Swapchain swapchain, Shader vertex, Shader fragment, PipelineLayout layout, Mesh cube) {
+	public Pipeline pipeline(RenderPass pass, Shader vertex, Shader fragment, PipelineLayout layout, Mesh cube, ApplicationConfiguration cfg) {
 		return new GraphicsPipelineBuilder(pass)
-				.viewport(new Rectangle(swapchain.extents()))
+				.viewport(new Rectangle(cfg.getDimensions()))
 				.shader(new ProgrammableShaderStage(VkShaderStage.VERTEX, vertex))
 				.shader(new ProgrammableShaderStage(VkShaderStage.FRAGMENT, fragment))
 				.input()

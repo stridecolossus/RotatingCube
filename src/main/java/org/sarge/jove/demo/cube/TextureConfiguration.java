@@ -7,7 +7,7 @@ import org.sarge.jove.platform.vulkan.*;
 import org.sarge.jove.platform.vulkan.core.*;
 import org.sarge.jove.platform.vulkan.image.*;
 import org.sarge.jove.platform.vulkan.image.Image.Descriptor;
-import org.sarge.jove.platform.vulkan.memory.MemoryProperties;
+import org.sarge.jove.platform.vulkan.memory.*;
 import org.sarge.jove.platform.vulkan.pipeline.Barrier;
 import org.sarge.jove.platform.vulkan.util.FormatBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +18,12 @@ public class TextureConfiguration {
 	@Autowired private LogicalDevice dev;
 
 	@Bean
-	public Sampler sampler() {
+	Sampler sampler() {
 		return new Sampler.Builder().build(dev);
 	}
 
 	@Bean
-	public View texture(DataSource data, Command.Pool graphics) throws IOException {
+	View texture(DataSource data, Command.Pool graphics, Allocator allocator) throws IOException {
 		// Load texture image
 		final var loader = new ResourceLoaderAdapter<>(data, new NativeImageLoader());
 		final ImageData image = loader.load("thiswayup.jpg");
@@ -52,7 +52,7 @@ public class TextureConfiguration {
 		final Image texture = new DefaultImage.Builder()
 				.descriptor(descriptor)
 				.properties(props)
-				.build(dev);
+				.build(dev, allocator);
 
 		// Prepare texture
 		new Barrier.Builder()
@@ -66,7 +66,7 @@ public class TextureConfiguration {
 				.submit(graphics);
 
 		// Create staging buffer
-		final VulkanBuffer staging = VulkanBuffer.staging(dev, image.data());
+		final VulkanBuffer staging = VulkanBuffer.staging(dev, allocator, image.data());
 
 		// Copy staging to texture
 		new ImageTransferCommand.Builder()
@@ -96,6 +96,6 @@ public class TextureConfiguration {
 		// Create texture view
 		return new View.Builder(texture)
 				.mapping(ComponentMapping.of(image.channels()))
-				.build();
+				.build(dev);
 	}
 }

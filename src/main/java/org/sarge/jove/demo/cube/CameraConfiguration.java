@@ -3,19 +3,23 @@ package org.sarge.jove.demo.cube;
 import java.nio.ByteBuffer;
 
 import org.sarge.jove.control.*;
+import org.sarge.jove.control.Animator.Animation;
 import org.sarge.jove.geometry.*;
 import org.sarge.jove.platform.vulkan.*;
 import org.sarge.jove.platform.vulkan.core.*;
-import org.sarge.jove.platform.vulkan.memory.MemoryProperties;
-import org.sarge.jove.platform.vulkan.render.*;
+import org.sarge.jove.platform.vulkan.memory.*;
+import org.sarge.jove.platform.vulkan.render.ResourceBuffer;
 import org.sarge.jove.scene.core.Projection;
 import org.sarge.jove.util.MathsUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 
 @Configuration
 public class CameraConfiguration {
+	private @Autowired ApplicationConfiguration cfg;
+
 	@Bean
-	public static ResourceBuffer uniform(LogicalDevice dev) {
+	public ResourceBuffer uniform(LogicalDevice dev, Allocator allocator) {
 		// Specify uniform buffer
 		final var props = new MemoryProperties.Builder<VkBufferUsageFlag>()
 				.usage(VkBufferUsageFlag.UNIFORM_BUFFER)
@@ -25,7 +29,8 @@ public class CameraConfiguration {
 				.build();
 
 		// Create uniform buffer
-		final VulkanBuffer buffer = VulkanBuffer.create(dev, Matrix4.LENGTH, props);
+		final int len = (2 + cfg.getInstances()) * Matrix.LAYOUT.stride();
+		final VulkanBuffer buffer = VulkanBuffer.create(dev, allocator, len, props);
 		return new ResourceBuffer(buffer, VkDescriptorType.UNIFORM_BUFFER, 0);
 	}
 
@@ -47,36 +52,60 @@ public class CameraConfiguration {
 	}
 
 	@Bean
-	static Matrix projection(Swapchain swapchain) {
-		return Projection.DEFAULT.matrix(0.1f, 100, swapchain.extents());
+	Matrix projection() {
+		return Projection.DEFAULT.matrix(0.1f, 100, cfg.getDimensions());
 	}
 
 	@Bean
-	static RotationAnimation rotation() {
-		final Normal axis = new Vector(MathsUtil.HALF, 1, 0).normalize();
-		return new RotationAnimation(axis);
+	static MutableRotation rotation() {
+		final Vector axis = new Vector(MathsUtil.HALF, 1, 0);
+		return new MutableRotation(new Normal(axis));
 	}
 
 	@Bean
-	static Animator animator(RotationAnimation rot, ApplicationConfiguration cfg) {
-		return new BoundAnimator(rot, cfg.getPeriod());
+	Animator animator(Animation rot) {
+		return new Animator(rot, cfg.getPeriod());
 	}
 
 	@Bean
 	public static Player player(Animator animator) {
-		final Player player = new Player();
-		player.add(animator);
-		player.play();
+		final Player player = new Player(animator);
+		player.apply(Playable.State.PLAY);
 		return player;
 	}
 
 	@Bean
-	public static Frame.Listener update(ResourceBuffer uniform, Matrix projection, Matrix view, RotationAnimation rot) {
+	public Frame.Listener update(ResourceBuffer uniform, Matrix projection, Matrix view, MutableRotation rotation) {
+		final int instances = cfg.getInstances();
+
+		final int size = 1 + (int) Math.sqrt(instances - 1);
+
+		final float width = 2f / size;
+		final float half = width / 2;
+
+		final Matrix scale = Matrix.scale(half, half, half);
+
 		final ByteBuffer bb = uniform.buffer();
-		return () -> {
-			final Matrix model = rot.rotation().matrix();
-			final Matrix matrix = projection.multiply(view).multiply(model);
-			matrix.buffer(bb);
+		return frame -> {
+			projection.buffer(bb);
+			view.buffer(bb);
+
+			// TODO
+			// - halfs
+			// - build translation array
+			// - scale to width
+			final Matrix rot = rotation.matrix();
+			for(int row = 0; row < size; ++row) {
+				for(int col = 0; col < size; ++col) {
+					final float x = col * width - half;
+					final float y = row * width - half;
+    				final Vector v = new Vector(x, y, 0);
+    				final Matrix trans = Matrix.translation(v);
+    				final Matrix model = trans.multiply(rot).multiply(scale);
+    				model.buffer(bb);
+				}
+			}
+
 			bb.rewind();
 		};
 	}

@@ -45,8 +45,8 @@ public class DescriptorConfiguration {
 	@Bean
 	public DescriptorSet descriptor(Pool pool, Layout layout, Sampler sampler, View texture, ResourceBuffer uniform) {
 		final DescriptorSet set = pool.allocate(layout).iterator().next();
-		set.set(samplerBinding, sampler.resource(texture));
-		set.set(uniformBinding, uniform);
+		set.entry(samplerBinding).set(sampler.resource(texture));
+		set.entry(uniformBinding).set(uniform);
 		DescriptorSet.update(dev, List.of(set));
 		return set;
 	}

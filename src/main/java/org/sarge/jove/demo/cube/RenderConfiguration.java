@@ -4,8 +4,10 @@ import java.util.List;
 
 import org.sarge.jove.model.Mesh;
 import org.sarge.jove.platform.vulkan.core.*;
+import org.sarge.jove.platform.vulkan.core.Command.SecondaryBuffer;
 import org.sarge.jove.platform.vulkan.pipeline.*;
 import org.sarge.jove.platform.vulkan.render.*;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.*;
 
 @Configuration
@@ -26,12 +28,27 @@ public class RenderConfiguration {
 	}
 
 	@Bean
-	static DrawCommand draw(Mesh cube) {
-		return DrawCommand.of(cube);
+	static DrawCommand draw(Mesh cube, ApplicationConfiguration cfg) {
+		return new DrawCommand.Builder()
+				.count(cube.count())
+				.instances(cfg.getInstances())
+				.build();
 	}
 
 	@Bean
-	static RenderSequence sequence(List<Command> commands) {
-		return RenderSequence.of(commands);
+	static Command.Sequence sequence(@Qualifier("graphics") Command.Pool pool, List<Command> commands, RenderPass pass) {
+		// TODO - this is still all very messy
+
+		final SecondaryBuffer buffer = pool.secondary();
+
+		buffer.begin(pass.handle());
+
+		for(Command cmd : commands) {
+			buffer.add(cmd);
+		}
+
+		buffer.end();
+
+		return buffer.sequence();
 	}
 }
