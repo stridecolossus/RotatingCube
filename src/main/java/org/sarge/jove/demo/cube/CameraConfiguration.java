@@ -3,7 +3,6 @@ package org.sarge.jove.demo.cube;
 import java.nio.ByteBuffer;
 
 import org.sarge.jove.control.*;
-import org.sarge.jove.control.Animator.Animation;
 import org.sarge.jove.geometry.*;
 import org.sarge.jove.platform.vulkan.*;
 import org.sarge.jove.platform.vulkan.core.*;
@@ -63,8 +62,8 @@ public class CameraConfiguration {
 	}
 
 	@Bean
-	Animator animator(Animation rot) {
-		return new Animator(rot, cfg.getPeriod());
+	Animator animator(MutableRotation rot) {
+		return new Animator(rot.animation(), cfg.getPeriod());
 	}
 
 	@Bean

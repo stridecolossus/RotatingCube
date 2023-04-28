@@ -22,8 +22,8 @@ class DesktopConfiguration {
 		return new Window.Builder()
 				.title(cfg.getTitle())
 				.size(cfg.getDimensions())
-				.hint(Window.Hint.RESIZABLE)
-				.hint(Window.Hint.DISABLE_OPENGL)
+				.hint(Window.Hint.RESIZABLE, false)
+				.hint(Window.Hint.CLIENT_API, 0)
 				.build(desktop);
 	}
 
