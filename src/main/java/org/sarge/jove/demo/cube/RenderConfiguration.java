@@ -1,54 +1,63 @@
 package org.sarge.jove.demo.cube;
 
 import java.util.List;
+import java.util.function.IntConsumer;
 
 import org.sarge.jove.model.Mesh;
 import org.sarge.jove.platform.vulkan.core.*;
-import org.sarge.jove.platform.vulkan.core.Command.SecondaryBuffer;
-import org.sarge.jove.platform.vulkan.pipeline.*;
+import org.sarge.jove.platform.vulkan.pipeline.Pipeline;
 import org.sarge.jove.platform.vulkan.render.*;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.*;
 
 @Configuration
-public class RenderConfiguration {
-	@Bean("pipeline.bind")
-	static Command pipeline(Pipeline pipeline) {
-		return pipeline.bind();
-	}
-
-	@Bean("descriptor.bind")
-	static Command descriptor(DescriptorSet set, PipelineLayout layout) {
-		return set.bind(layout);
-	}
-
-	@Bean("vbo.bind")
-	static Command vbo(VertexBuffer vbo) {
-		return vbo.bind(0);
-	}
+class RenderConfiguration {
+//	@Bean("pipeline.bind")
+//	static Command pipeline(Pipeline pipeline) {
+//		return pipeline.bind();
+//	}
+//
+//	@Bean("descriptor.bind")
+//	static Command descriptor(Collection<DescriptorSet> sets, PipelineLayout layout) {
+//		// TODO
+//		final var first = sets.iterator().next();
+//		return first.bind(layout);
+//	}
 
 	@Bean
-	static DrawCommand draw(Mesh cube, ApplicationConfiguration cfg) {
+	static DrawCommand draw(LogicalDevice device, Mesh mesh) { // , ApplicationConfiguration cfg) {
 		return new DrawCommand.Builder()
-				.count(cube.count())
-				.instances(cfg.getInstances())
-				.build();
+				.vertexCount(mesh.count())
+				.build(device);
 	}
 
 	@Bean
-	static Command.Sequence sequence(@Qualifier("graphics") Command.Pool pool, List<Command> commands, RenderPass pass) {
-		// TODO - this is still all very messy
+	static RenderSequence sequence(Pipeline pipeline, List<DescriptorSet> sets, IntConsumer update, VertexBuffer vbo, DrawCommand draw) {
 
-		final SecondaryBuffer buffer = pool.secondary();
+		final Command bindPipeline = pipeline.bind();
 
-		buffer.begin(pass.handle());
+		final Command[] bindDescriptorSet = sets
+				.stream()
+				.map(set -> set.bind(pipeline.layout()))
+				.toArray(Command[]::new);
 
-		for(Command cmd : commands) {
-			buffer.add(cmd);
-		}
+		final Command bindVertexBuffer = vbo.bind(0);
 
-		buffer.end();
+		final RenderSequence sequence = (index, buffer) -> {
 
-		return buffer.sequence();
+			update.accept(index);
+
+			buffer.add(bindPipeline);
+			buffer.add(bindVertexBuffer);
+			buffer.add(bindDescriptorSet[index]);
+			buffer.add(draw);
+		};
+
+		return sequence;
+	}
+
+	@Bean
+	static FrameComposer composer(@Qualifier("graphics") Command.Pool pool, RenderSequence sequence) {
+		return new FrameComposer(pool, sequence);
 	}
 }

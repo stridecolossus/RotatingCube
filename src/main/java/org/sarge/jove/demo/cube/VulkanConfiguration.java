@@ -1,35 +1,38 @@
 package org.sarge.jove.demo.cube;
 
+import org.sarge.jove.foreign.DefaultRegistry;
 import org.sarge.jove.platform.desktop.Desktop;
 import org.sarge.jove.platform.vulkan.core.*;
-import org.sarge.jove.platform.vulkan.memory.Allocator;
-import org.sarge.jove.platform.vulkan.util.ValidationLayer;
+import org.sarge.jove.platform.vulkan.memory.*;
 import org.springframework.context.annotation.*;
 
 @Configuration
 class VulkanConfiguration {
 	@Bean
-	static VulkanLibrary library() {
-		return VulkanLibrary.create();
+	static VulkanCoreLibrary library() {
+		return Vulkan.create();
 	}
 
 	@Bean
-	static Instance instance(VulkanLibrary lib, Desktop desktop, ApplicationConfiguration cfg) {
-		return new Instance.Builder()
-				.name(cfg.getTitle())
-				.extension(Handler.EXTENSION)
+	static Instance instance(VulkanCoreLibrary lib, Desktop desktop) { // , ApplicationConfiguration cfg) {
+		final var instance = new Instance.Builder()
+				.name("Rotating Cube Demo") // cfg.getTitle())
+				.extension(DiagnosticHandler.EXTENSION)
 				.extensions(desktop.extensions())
-				.layer(ValidationLayer.STANDARD_VALIDATION)
+				.layer(DiagnosticHandler.STANDARD_VALIDATION)
 				.build(lib);
+
+		return instance;
 	}
 
 	@Bean
-	static Handler diagnostics(Instance instance) {
-		return new Handler.Builder().build(instance);
+	static DiagnosticHandler diagnostics(Instance instance) {
+		return new DiagnosticHandler.Builder().build(instance, DefaultRegistry.create());
 	}
 
 	@Bean
-	static Allocator allocator(LogicalDevice dev) {
-		return Allocator.create(dev);
+	static Allocator allocator(LogicalDevice dev, PhysicalDevice physical) {
+		final var types = MemoryType.enumerate(physical.memory());
+		return new Allocator(dev, types);
 	}
 }

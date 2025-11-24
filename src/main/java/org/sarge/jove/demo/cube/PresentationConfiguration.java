@@ -1,61 +1,98 @@
 package org.sarge.jove.demo.cube;
 
+import java.time.Duration;
 import java.util.*;
 
-import org.sarge.jove.common.Handle;
-import org.sarge.jove.control.Frame;
-import org.sarge.jove.platform.vulkan.VkImageUsageFlag;
+import org.sarge.jove.common.Colour;
+import org.sarge.jove.control.*;
+import org.sarge.jove.platform.desktop.Window;
+import org.sarge.jove.platform.vulkan.*;
 import org.sarge.jove.platform.vulkan.core.*;
+import org.sarge.jove.platform.vulkan.image.ClearValue.ColourClearValue;
 import org.sarge.jove.platform.vulkan.render.*;
-import org.sarge.jove.scene.core.RenderLoop;
-import org.springframework.beans.factory.annotation.*;
 import org.springframework.context.annotation.*;
 
 @Configuration
 class PresentationConfiguration {
-	@Autowired private ApplicationConfiguration cfg;
+//	@Autowired private ApplicationConfiguration cfg;
 
 	@Bean
-	public static Surface surface(Handle surface, PhysicalDevice dev) {
-		return new Surface(surface, dev);
+	static VulkanSurface surface(Window window, Instance instance, VulkanCoreLibrary lib) {
+		return new VulkanSurface(window, instance, lib);
 	}
 
 	@Bean
-	SwapchainAdapter adapter(Surface surface, RenderPass pass) {
-		final var swapchain = new Swapchain.Builder(surface)
-				.count(cfg.getFrameCount())
-				.clear(cfg.getBackground())
-				.usage(VkImageUsageFlag.TRANSFER_SRC);
-
-		return new SwapchainAdapter(swapchain, pass, List.of());
+	static VulkanSurface.Properties properties(VulkanSurface surface, PhysicalDevice device) {
+		return surface.properties(device);
 	}
 
 	@Bean
-	public static RenderPass pass(LogicalDevice dev) {
-		final var surfaceFormat = Surface.defaultSurfaceFormat();
-		final Attachment attachment = Attachment.colour(surfaceFormat.format);
-		return new Subpass().colour(attachment).create(dev);
+	static SwapchainFactory swapchain(LogicalDevice dev, VulkanSurface.Properties properties) {
+		final var builder = new Swapchain.Builder()
+				.init(properties.capabilities())
+				.format(new SurfaceFormatWrapper(VkFormat.B8G8R8A8_UNORM, VkColorSpaceKHR.SRGB_NONLINEAR_KHR));
+
+		return new SwapchainFactory(dev, properties, builder, List.of());
 	}
 
 	@Bean
-	static FrameComposer composer(@Qualifier("graphics") Command.Pool pool, Command.Sequence sequence) {
-		return new FrameComposer(pool, sequence);
+	static Attachment colour(SwapchainFactory swapchain) {
+		return Attachment.colour(swapchain.swapchain().format());
 	}
 
 	@Bean
-	VulkanRenderTask render(FrameComposer composer, SwapchainAdapter swapchain, LogicalDevice dev) {
-		final VulkanFrame[] frames = VulkanFrame.array(cfg.getFrameCount(), () -> DefaultVulkanFrame.create(dev));
-		return new VulkanRenderTask(composer, swapchain, frames);
+	static RenderPass pass(LogicalDevice dev, Attachment colour) {
+		final Subpass subpass = new Subpass.Builder()
+				.colour(colour)
+				.build();
+
+		final var source = new Dependency.Properties(Dependency.VK_SUBPASS_EXTERNAL, Set.of(VkPipelineStage.COLOR_ATTACHMENT_OUTPUT), Set.of());
+		final var destination = new Dependency.Properties(subpass, Set.of(VkPipelineStage.COLOR_ATTACHMENT_OUTPUT), Set.of(VkAccess.COLOR_ATTACHMENT_WRITE));
+		final var dependency = new Dependency(source, destination, Set.of());
+
+		return new RenderPass.Builder()
+				.add(subpass)
+				.dependency(dependency)
+				.build(dev);
 	}
 
 	@Bean
-	public RenderLoop loop(VulkanRenderTask task, Collection<Frame.Listener> listeners, ApplicationConfiguration cfg) {
-		final var loop = new RenderLoop();
-		loop.rate(cfg.getFrameRate());
-		loop.start(task::render);
+	static Framebuffer.Group framebuffers(SwapchainFactory swapchain, RenderPass pass, Attachment colour) {
+		final var group = new Framebuffer.Group(swapchain.swapchain(), pass, null);
+		group.clear(colour, new ColourClearValue(new Colour(0.3f, 0.3f, 0.3f, 1)));
+		return group;
+	}
+
+	@Bean
+	static RenderTask render(FrameComposer composer, SwapchainFactory swapchain, Framebuffer.Group framebuffers) {
+		return new RenderTask(swapchain, framebuffers, composer);
+	}
+
+	@Bean
+	static FrameCounter counter() {
+		return new FrameCounter();
+	}
+
+	@Bean
+	static Frame.Listener watch(FrameCounter counter) {
+		return Frame.Listener.periodic(Duration.ofSeconds(1), _ -> System.out.println(counter));
+	}
+
+	@Bean
+	static Frame.Listener terminate() {
+		return Frame.Listener.periodic(Duration.ofSeconds(5), _ -> System.exit(0));
+	}
+
+	@Bean
+	static RenderLoop loop(RenderTask task, Collection<Frame.Listener> listeners) { //, ApplicationConfiguration cfg) {
+		final var tracker = new Frame.Tracker();
 		for(var listener : listeners) {
-			loop.add(listener);
+			tracker.add(listener);
 		}
+
+		final var loop = new RenderLoop(task, tracker);
+		loop.start();
+
 		return loop;
 	}
 }

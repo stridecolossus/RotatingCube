@@ -1,55 +1,54 @@
 package org.sarge.jove.demo.cube;
 
-import java.io.*;
+import java.io.IOException;
+import java.nio.file.Paths;
 
 import org.sarge.jove.common.Rectangle;
-import org.sarge.jove.io.*;
 import org.sarge.jove.model.Mesh;
 import org.sarge.jove.platform.vulkan.VkShaderStage;
 import org.sarge.jove.platform.vulkan.core.LogicalDevice;
 import org.sarge.jove.platform.vulkan.pipeline.*;
+import org.sarge.jove.platform.vulkan.pipeline.Shader.ShaderLoader;
+import org.sarge.jove.platform.vulkan.pipeline.VertexInputStage.VertexBinding;
 import org.sarge.jove.platform.vulkan.render.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 
 @Configuration
 class PipelineConfiguration {
-	private final LogicalDevice dev;
-	private final ResourceLoaderAdapter<InputStream, Shader> loader;
-
-	PipelineConfiguration(LogicalDevice dev, DataSource classpath) {
-		this.dev = dev;
-		this.loader = new ResourceLoaderAdapter<>(classpath, new Shader.Loader(dev));
-	}
+	@Autowired
+	private LogicalDevice device;
 
 	@Bean
 	Shader vertex() throws IOException {
-		return loader.load("spv.cube.vert");
+		final var loader = new ShaderLoader(device);
+		return loader.load(Paths.get("src/main/resources/spv.quad.uniform.vert"));
 	}
 
 	@Bean
 	Shader fragment() throws IOException {
-		return loader.load("spv.cube.frag");
+		final var loader = new ShaderLoader(device);
+		return loader.load(Paths.get("src/main/resources/spv.quad.texture.frag"));
 	}
 
 	@Bean
 	PipelineLayout pipelineLayout(DescriptorSet.Layout layout) {
 		return new PipelineLayout.Builder()
 				.add(layout)
-				.build(dev);
+				.build(device);
 	}
 
 	@Bean
-	public Pipeline pipeline(RenderPass pass, Shader vertex, Shader fragment, PipelineLayout layout, Mesh cube, ApplicationConfiguration cfg) {
-		return new GraphicsPipelineBuilder(pass)
-				.viewport(new Rectangle(cfg.getDimensions()))
-				.shader(new ProgrammableShaderStage(VkShaderStage.VERTEX, vertex))
-				.shader(new ProgrammableShaderStage(VkShaderStage.FRAGMENT, fragment))
-				.input()
-					.add(cube.layout())
-					.build()
-				.assembly()
-					.topology(cube.primitive())
-					.build()
-				.build(dev, layout);
+	Pipeline pipeline(RenderPass pass, Shader vertex, Shader fragment, PipelineLayout layout, Mesh mesh) { // ApplicationConfiguration cfg) {
+		final VertexBinding binding = VertexBinding.of(0, 0, mesh.layout());
+		final var builder = new GraphicsPipelineBuilder();
+		builder.pass(pass);
+		builder.layout(layout);
+		builder.viewport().viewportAndScissor(new Rectangle(1024, 768));
+		builder.input().add(binding);
+		builder.assembly().topology(mesh.primitive());
+		builder.shader(new ProgrammableShaderStage(VkShaderStage.VERTEX, vertex));
+		builder.shader(new ProgrammableShaderStage(VkShaderStage.FRAGMENT, fragment));
+		return builder.build(device);
 	}
 }

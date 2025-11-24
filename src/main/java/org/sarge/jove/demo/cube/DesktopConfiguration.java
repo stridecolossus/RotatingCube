@@ -1,11 +1,6 @@
 package org.sarge.jove.demo.cube;
 
-import org.sarge.jove.common.Handle;
-import org.sarge.jove.control.WindowListener;
 import org.sarge.jove.platform.desktop.*;
-import org.sarge.jove.platform.vulkan.core.Instance;
-import org.sarge.jove.scene.core.RenderLoop;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 
 @Configuration
@@ -22,31 +17,27 @@ class DesktopConfiguration {
 		return new Window.Builder()
 				.title(cfg.getTitle())
 				.size(cfg.getDimensions())
-				.hint(Window.Hint.RESIZABLE, false)
 				.hint(Window.Hint.CLIENT_API, 0)
+				.hint(Window.Hint.RESIZABLE, 0)
+				.hint(Window.Hint.VISIBLE, 1)
 				.build(desktop);
 	}
 
-	@Bean("surface-handle")
-	public static Handle surface(Instance instance, Window window) {
-		return window.surface(instance.handle());
-	}
-
-	@Autowired
-	void close(Window window) {
-		window.listener(WindowListener.Type.CLOSED, (type, state) -> System.exit(0));
-	}
-
-	@Autowired
-	void pause(RenderLoop loop, Window window) {
-		final WindowListener minimised = (__, state) -> {
-			if(state) {
-				loop.pause();
-			}
-			else {
-				loop.restart();
-			}
-		};
-		window.listener(WindowListener.Type.ICONIFIED, minimised);
-	}
+//	@Autowired
+//	void close(Window window) {
+//		window.listener(WindowListener.Type.CLOSED, (type, state) -> System.exit(0));
+//	}
+//
+//	@Autowired
+//	void pause(RenderLoop loop, Window window) {
+//		final WindowListener minimised = (__, state) -> {
+//			if(state) {
+//				loop.pause();
+//			}
+//			else {
+//				loop.restart();
+//			}
+//		};
+//		window.listener(WindowListener.Type.ICONIFIED, minimised);
+//	}
 }
