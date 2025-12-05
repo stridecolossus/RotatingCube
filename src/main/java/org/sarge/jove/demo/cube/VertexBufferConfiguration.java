@@ -43,10 +43,10 @@ class VertexBufferConfiguration {
 		vertices.buffer(staging.buffer());
 
 		// Init VBO properties
-		final var props = new MemoryProperties.Builder<VkBufferUsageFlag>()
-				.usage(VkBufferUsageFlag.TRANSFER_DST)
-				.usage(VkBufferUsageFlag.VERTEX_BUFFER)
-				.required(VkMemoryProperty.DEVICE_LOCAL)
+		final var props = new MemoryProperties.Builder<VkBufferUsageFlags>()
+				.usage(VkBufferUsageFlags.TRANSFER_DST)
+				.usage(VkBufferUsageFlags.VERTEX_BUFFER)
+				.required(VkMemoryPropertyFlags.DEVICE_LOCAL)
 				.build();
 
 		// Create destination

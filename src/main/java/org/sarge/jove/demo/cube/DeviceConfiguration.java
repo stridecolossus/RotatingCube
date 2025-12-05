@@ -1,6 +1,6 @@
 package org.sarge.jove.demo.cube;
 
-import org.sarge.jove.platform.vulkan.VkQueueFlag;
+import org.sarge.jove.platform.vulkan.VkQueueFlags;
 import org.sarge.jove.platform.vulkan.core.*;
 import org.sarge.jove.platform.vulkan.core.LogicalDevice.RequiredQueue;
 import org.sarge.jove.platform.vulkan.core.PhysicalDevice.Selector;
@@ -15,7 +15,7 @@ class DeviceConfiguration {
 	private final Selector presentation;
 
 	public DeviceConfiguration(VulkanSurface surface) {
-		this.graphics = Selector.queue(VkQueueFlag.GRAPHICS, VkQueueFlag.TRANSFER);
+		this.graphics = Selector.queue(VkQueueFlags.GRAPHICS, VkQueueFlags.TRANSFER);
 		this.presentation = new Selector(surface::isPresentationSupported);
 	}
 

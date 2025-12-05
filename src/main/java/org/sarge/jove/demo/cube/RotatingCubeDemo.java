@@ -1,8 +1,11 @@
 package org.sarge.jove.demo.cube;
 
+import java.time.Duration;
 import java.util.Collection;
 
 import org.sarge.jove.common.TransientObject;
+import org.sarge.jove.control.Frame;
+import org.sarge.jove.platform.desktop.Desktop;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.DestructionAwareBeanPostProcessor;
 import org.springframework.boot.SpringApplication;
@@ -11,42 +14,17 @@ import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 class RotatingCubeDemo {
-//	@Autowired private LogicalDevice dev;
-
-//	@Bean
-//	static CommandLineRunner runner(Desktop desktop) {
-//		return args -> {
-//			while(true) {
-//				desktop.poll();
-//			}
-//		};
-//	}
-
-//	@jakarta.annotation.PreDestroy
-//	void destroy() {
-//		loop.stop();
-//		dev.waitIdle();
-//	}
-
-//	@Autowired
-//	void screenshot(Window window, Swapchain swapchain, AllocationService allocator, Command.Pool graphics) {
-//		final Consumer<Button<?>> task = button -> {
-//			if(button.action() != Button.Action.PRESS) {
-//				return;
-//			}
-//
-//			final CaptureTask helper = new CaptureTask(allocator, graphics);
-//			final Image screenshot = helper.capture(swapchain);
-//			System.out.println(screenshot);
-////			System.exit(0);
-//		};
-//		window.keyboard().keyboard().bind(task::accept);
-//	}
 
 //	@Autowired
 //	void listener(Window window) {
 //		window.keyboard().keyboard().bind(button -> System.exit(0));
 //	}
+
+	// TODO
+	@Bean
+	static Frame.Listener terminate() {
+		return Frame.Listener.periodic(Duration.ofSeconds(5), _ -> System.exit(0));
+	}
 
 	@Bean
 	static DestructionAwareBeanPostProcessor destroyer() {
@@ -84,8 +62,13 @@ class RotatingCubeDemo {
 		};
 	}
 
-	@SuppressWarnings("resource")
+//	@SuppressWarnings("resource")
 	public static void main(String[] args) throws InterruptedException {
-		SpringApplication.run(RotatingCubeDemo.class, args);
+		final var context = SpringApplication.run(RotatingCubeDemo.class, args);
+
+		final Desktop desktop = context.getBean(Desktop.class);
+		while(true) {
+			desktop.poll();
+		}
 	}
 }

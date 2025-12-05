@@ -25,7 +25,7 @@ class RenderConfiguration {
 //	}
 
 	@Bean
-	static DrawCommand draw(LogicalDevice device, Mesh mesh) { // , ApplicationConfiguration cfg) {
+	static DrawCommand draw(LogicalDevice device, Mesh mesh) {
 		return new DrawCommand.Builder()
 				.vertexCount(mesh.count())
 				.build(device);

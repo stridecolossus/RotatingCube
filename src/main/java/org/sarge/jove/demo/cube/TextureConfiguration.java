@@ -1,9 +1,9 @@
 package org.sarge.jove.demo.cube;
 
-import static org.sarge.jove.platform.vulkan.VkAccess.*;
+import static org.sarge.jove.platform.vulkan.VkAccessFlags.*;
 import static org.sarge.jove.platform.vulkan.VkImageLayout.*;
-import static org.sarge.jove.platform.vulkan.VkImageUsageFlag.*;
-import static org.sarge.jove.platform.vulkan.VkPipelineStage.*;
+import static org.sarge.jove.platform.vulkan.VkImageUsageFlags.*;
+import static org.sarge.jove.platform.vulkan.VkPipelineStageFlags.*;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -34,17 +34,17 @@ class TextureConfiguration {
 
 		// Init descriptor
 		final var descriptor = new Image.Descriptor.Builder()
-				.type(VkImageType.TWO_D)
-				.aspect(VkImageAspect.COLOR)
+				.type(VkImageType.TYPE_2D)
+				.aspect(VkImageAspectFlags.COLOR)
 				.extents(image.size())
 				.format(format)
 				.build();
 
 		// Init memory
-		final var properties = new MemoryProperties.Builder<VkImageUsageFlag>()
+		final var properties = new MemoryProperties.Builder<VkImageUsageFlags>()
 				.usage(TRANSFER_DST)
 				.usage(SAMPLED)
-				.required(VkMemoryProperty.DEVICE_LOCAL)
+				.required(VkMemoryPropertyFlags.DEVICE_LOCAL)
 				.build();
 
 		// Create texture

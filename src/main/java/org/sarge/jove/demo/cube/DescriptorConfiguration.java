@@ -19,13 +19,13 @@ public class DescriptorConfiguration {
 	private final Binding samplerBinding = new Binding.Builder()
         	.binding(0)
         	.type(VkDescriptorType.COMBINED_IMAGE_SAMPLER)
-        	.stage(VkShaderStage.FRAGMENT)
+        	.stage(VkShaderStageFlags.FRAGMENT)
         	.build();
 
     private final Binding uniformBinding = new Binding.Builder()
             .binding(1)
             .type(VkDescriptorType.UNIFORM_BUFFER)
-            .stage(VkShaderStage.VERTEX)
+            .stage(VkShaderStageFlags.VERTEX)
             .build();
 
     @Bean

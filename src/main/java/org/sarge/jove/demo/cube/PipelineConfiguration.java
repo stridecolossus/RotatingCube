@@ -5,7 +5,7 @@ import java.nio.file.Paths;
 
 import org.sarge.jove.common.Rectangle;
 import org.sarge.jove.model.Mesh;
-import org.sarge.jove.platform.vulkan.VkShaderStage;
+import org.sarge.jove.platform.vulkan.VkShaderStageFlags;
 import org.sarge.jove.platform.vulkan.core.LogicalDevice;
 import org.sarge.jove.platform.vulkan.pipeline.*;
 import org.sarge.jove.platform.vulkan.pipeline.Shader.ShaderLoader;
@@ -47,8 +47,8 @@ class PipelineConfiguration {
 		builder.viewport().viewportAndScissor(new Rectangle(1024, 768));
 		builder.input().add(binding);
 		builder.assembly().topology(mesh.primitive());
-		builder.shader(new ProgrammableShaderStage(VkShaderStage.VERTEX, vertex));
-		builder.shader(new ProgrammableShaderStage(VkShaderStage.FRAGMENT, fragment));
+		builder.shader(new ProgrammableShaderStage(VkShaderStageFlags.VERTEX, vertex));
+		builder.shader(new ProgrammableShaderStage(VkShaderStageFlags.FRAGMENT, fragment));
 		return builder.build(device);
 	}
 }

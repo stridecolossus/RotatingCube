@@ -1,4 +1,6 @@
 package org.sarge.jove.demo.cube;
+import static org.sarge.jove.platform.vulkan.VkMemoryPropertyFlags.*;
+
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.function.IntConsumer;
@@ -17,11 +19,11 @@ import org.springframework.context.annotation.*;
 class CameraConfiguration {
 	@Bean
 	static VulkanBuffer[] uniformBuffers(Allocator allocator) {
-		final var properties = new MemoryProperties.Builder<VkBufferUsageFlag>()
-				.usage(VkBufferUsageFlag.UNIFORM_BUFFER)
-				.required(VkMemoryProperty.HOST_VISIBLE)
-				.required(VkMemoryProperty.HOST_COHERENT)
-				.optimal(VkMemoryProperty.DEVICE_LOCAL)
+		final var properties = new MemoryProperties.Builder<VkBufferUsageFlags>()
+				.usage(VkBufferUsageFlags.UNIFORM_BUFFER)
+				.required(HOST_VISIBLE)
+				.required(HOST_COHERENT)
+				.optimal(DEVICE_LOCAL)
 				.build();
 
 		final long length = Matrix.LAYOUT.stride();
@@ -74,8 +76,8 @@ class CameraConfiguration {
 				.build();
 
 		// TODO - this STILL feels the wrong way round!
-//		return translation.multiply(rotation);
-		return rotation.multiply(translation);
+		return translation.multiply(rotation);
+//		return rotation.multiply(translation);
 	}
 
 	@Bean

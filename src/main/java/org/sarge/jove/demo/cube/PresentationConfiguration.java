@@ -10,15 +10,15 @@ import org.sarge.jove.platform.vulkan.*;
 import org.sarge.jove.platform.vulkan.core.*;
 import org.sarge.jove.platform.vulkan.image.ClearValue.ColourClearValue;
 import org.sarge.jove.platform.vulkan.render.*;
+import org.sarge.jove.platform.vulkan.render.SwapchainFactory.SwapchainConfiguration;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.*;
 
 @Configuration
 class PresentationConfiguration {
-//	@Autowired private ApplicationConfiguration cfg;
-
 	@Bean
-	static VulkanSurface surface(Window window, Instance instance, VulkanCoreLibrary lib) {
-		return new VulkanSurface(window, instance, lib);
+	static VulkanSurface surface(Window window, Instance instance, VulkanCoreLibrary library) {
+		return new VulkanSurface(window, instance, library);
 	}
 
 	@Bean
@@ -28,11 +28,13 @@ class PresentationConfiguration {
 
 	@Bean
 	static SwapchainFactory swapchain(LogicalDevice dev, VulkanSurface.Properties properties) {
-		final var builder = new Swapchain.Builder()
-				.init(properties.capabilities())
-				.format(new SurfaceFormatWrapper(VkFormat.B8G8R8A8_UNORM, VkColorSpaceKHR.SRGB_NONLINEAR_KHR));
+		final var builder = new Swapchain.Builder();
 
-		return new SwapchainFactory(dev, properties, builder, List.of());
+		final SwapchainConfiguration[] configuration = {
+			new SurfaceFormatSwapchainConfiguration(VkFormat.B8G8R8A8_UNORM, VkColorSpaceKHR.SRGB_NONLINEAR_KHR),
+		};
+
+		return new SwapchainFactory(dev, properties, builder, List.of(configuration));
 	}
 
 	@Bean
@@ -46,8 +48,8 @@ class PresentationConfiguration {
 				.colour(colour)
 				.build();
 
-		final var source = new Dependency.Properties(Dependency.VK_SUBPASS_EXTERNAL, Set.of(VkPipelineStage.COLOR_ATTACHMENT_OUTPUT), Set.of());
-		final var destination = new Dependency.Properties(subpass, Set.of(VkPipelineStage.COLOR_ATTACHMENT_OUTPUT), Set.of(VkAccess.COLOR_ATTACHMENT_WRITE));
+		final var source = new Dependency.Properties(Dependency.VK_SUBPASS_EXTERNAL, Set.of(VkPipelineStageFlags.COLOR_ATTACHMENT_OUTPUT), Set.of());
+		final var destination = new Dependency.Properties(subpass, Set.of(VkPipelineStageFlags.COLOR_ATTACHMENT_OUTPUT), Set.of(VkAccessFlags.COLOR_ATTACHMENT_WRITE));
 		final var dependency = new Dependency(source, destination, Set.of());
 
 		return new RenderPass.Builder()
@@ -79,20 +81,16 @@ class PresentationConfiguration {
 	}
 
 	@Bean
-	static Frame.Listener terminate() {
-		return Frame.Listener.periodic(Duration.ofSeconds(5), _ -> System.exit(0));
-	}
-
-	@Bean
-	static RenderLoop loop(RenderTask task, Collection<Frame.Listener> listeners) { //, ApplicationConfiguration cfg) {
+	static RenderLoop loop(RenderTask task, Collection<Frame.Listener> listeners) {
 		final var tracker = new Frame.Tracker();
 		for(var listener : listeners) {
 			tracker.add(listener);
 		}
+		return new RenderLoop(task, tracker);
+	}
 
-		final var loop = new RenderLoop(task, tracker);
-		loop.start();
-
-		return loop;
+	@Bean
+	static CommandLineRunner start(RenderLoop loop) {
+		return _ -> loop.start();
 	}
 }
