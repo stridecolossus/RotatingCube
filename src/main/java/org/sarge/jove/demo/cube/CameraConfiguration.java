@@ -47,7 +47,7 @@ class CameraConfiguration {
 	}
 
 	@Bean
-	static IntConsumer update(ResourceBuffer[] uniform, Matrix projection, Matrix view, AxisAngle rotation) {
+	static IntConsumer update(ResourceBuffer[] uniform, Matrix projection, Matrix view, MutableRotation rotation) {
 		final ByteBuffer[] buffers = new ByteBuffer[2];
 		for(int n = 0; n < 2; ++n) {
 			buffers[n] = uniform[n].buffer().buffer();
@@ -86,13 +86,13 @@ class CameraConfiguration {
 	}
 
 	@Bean
-	static AxisAngle rotation() {
+	static MutableRotation rotation() {
 		final var axis = new Vector(MathsUtility.HALF, 1, 0);
-		return new AxisAngle(new Normal(axis), 0);
+		return new MutableRotation(new Normal(axis));
 	}
 
 	@Bean
-	static Animator animator(AxisAngle rotation) {
+	static Animator animator(MutableRotation rotation) {
 		return new Animator(rotation.animation(), Duration.ofSeconds(2)); // cfg.getPeriod());
 	}
 
