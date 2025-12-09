@@ -2,11 +2,15 @@ package org.sarge.jove.demo.cube;
 
 import java.time.Duration;
 import java.util.Collection;
+import java.util.function.Consumer;
 
 import org.sarge.jove.common.TransientObject;
-import org.sarge.jove.control.Frame;
-import org.sarge.jove.platform.desktop.Desktop;
+import org.sarge.jove.control.*;
+import org.sarge.jove.control.Button.ButtonEvent;
+import org.sarge.jove.platform.desktop.*;
+import org.sarge.jove.platform.vulkan.core.LogicalDevice;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.DestructionAwareBeanPostProcessor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,13 +19,18 @@ import org.springframework.context.annotation.Bean;
 @SpringBootApplication
 class RotatingCubeDemo {
 
-//	@Autowired
-//	void listener(Window window) {
-//		window.keyboard().keyboard().bind(button -> System.exit(0));
-//	}
+	@Autowired
+	void listener(Window window, RenderLoop loop, LogicalDevice device) {
+		final Consumer<ButtonEvent> stop = _ -> {
+			loop.stop();
+			device.waitIdle();
+			System.exit(0);
+		};
+		new KeyboardDevice(window).bind(stop);
+	}
 
 	// TODO
-	@Bean
+	//@Bean
 	static Frame.Listener terminate() {
 		return Frame.Listener.periodic(Duration.ofSeconds(5), _ -> System.exit(0));
 	}
