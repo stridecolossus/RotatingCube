@@ -54,7 +54,8 @@ class CameraConfiguration {
 		}
 
 		return index -> {
-			final Matrix matrix = projection.multiply(view).multiply(rotation.matrix());
+			final var rot = rotation.toAxisAngle().matrix();
+			final Matrix matrix = projection.multiply(view).multiply(rot);
 			final ByteBuffer bb = buffers[index];
 			bb.rewind();
 			matrix.buffer(bb);
