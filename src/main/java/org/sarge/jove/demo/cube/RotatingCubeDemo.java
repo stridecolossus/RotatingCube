@@ -1,12 +1,10 @@
 package org.sarge.jove.demo.cube;
-
-import java.time.Duration;
 import java.util.Collection;
 import java.util.function.Consumer;
 
 import org.sarge.jove.common.TransientObject;
-import org.sarge.jove.control.*;
 import org.sarge.jove.control.Button.ButtonEvent;
+import org.sarge.jove.control.RenderLoop;
 import org.sarge.jove.platform.desktop.*;
 import org.sarge.jove.platform.vulkan.core.LogicalDevice;
 import org.springframework.beans.BeansException;
@@ -18,7 +16,6 @@ import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 class RotatingCubeDemo {
-
 	@Autowired
 	void listener(Window window, RenderLoop loop, LogicalDevice device) {
 		final Consumer<ButtonEvent> stop = _ -> {
@@ -26,13 +23,7 @@ class RotatingCubeDemo {
 			device.waitIdle();
 			System.exit(0);
 		};
-		new KeyboardDevice(window).bind(stop);
-	}
-
-	// TODO
-	//@Bean
-	static Frame.Listener terminate() {
-		return Frame.Listener.periodic(Duration.ofSeconds(5), _ -> System.exit(0));
+		window.keyboard().bind(stop);
 	}
 
 	@Bean
@@ -71,7 +62,6 @@ class RotatingCubeDemo {
 		};
 	}
 
-//	@SuppressWarnings("resource")
 	public static void main(String[] args) throws InterruptedException {
 		final var context = SpringApplication.run(RotatingCubeDemo.class, args);
 

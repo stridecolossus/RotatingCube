@@ -26,7 +26,7 @@ class TextureConfiguration {
 	}
 
 	@Bean
-	View texture(Command.Pool graphics, Allocator allocator) throws IOException {
+	View texture(Allocator allocator, Command.Pool graphics) throws IOException {
 		// Load image
 		final var loader = new NativeImageLoader();
 		final ImageData image = loader.load(Paths.get("../Data/thiswayup.jpg"));
@@ -54,16 +54,15 @@ class TextureConfiguration {
 				.build(allocator);
 
 		// Prepare texture
-		final LogicalDevice device = allocator.device();
 		new Barrier.Builder()
 				.source(TOP_OF_PIPE)
 				.destination(TRANSFER)
 				.add(Set.of(), Set.of(TRANSFER_WRITE), new ImageBarrier(texture, UNDEFINED, TRANSFER_DST_OPTIMAL))
-				.build(device)
+				.build(allocator.device())
 				.submit(graphics);
 
 		// Create staging buffer
-		final var staging = VulkanBuffer.staging(allocator, image.data());
+		final var staging = new VulkanBuffer.Factory(allocator).staging(image.data());
 
 		// Copy staging to texture
 		new ImageTransferCommand.Builder()
@@ -82,13 +81,13 @@ class TextureConfiguration {
 				.source(TRANSFER)
 				.destination(FRAGMENT_SHADER)
 				.add(Set.of(TRANSFER_WRITE), Set.of(SHADER_READ), new ImageBarrier(texture, TRANSFER_DST_OPTIMAL, SHADER_READ_ONLY_OPTIMAL))
-				.build(device)
+				.build(allocator.device())
 				.submit(graphics);
 
 		// Create image view
 		return new View.Builder()
 				.mapping(ComponentMapping.of(image.channels()))
 				.release()
-				.build(device, texture);
+				.build(allocator.device(), texture);
 	}
 }

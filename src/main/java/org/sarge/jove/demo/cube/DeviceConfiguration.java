@@ -2,10 +2,10 @@ package org.sarge.jove.demo.cube;
 
 import org.sarge.jove.platform.vulkan.VkQueueFlags;
 import org.sarge.jove.platform.vulkan.core.*;
-import org.sarge.jove.platform.vulkan.core.LogicalDevice.RequiredQueue;
+import org.sarge.jove.platform.vulkan.core.LogicalDevice.Builder.RequiredQueue;
 import org.sarge.jove.platform.vulkan.core.PhysicalDevice.Selector;
 import org.sarge.jove.platform.vulkan.core.WorkQueue.Family;
-import org.sarge.jove.platform.vulkan.present.Swapchain;
+import org.sarge.jove.platform.vulkan.present.*;
 import org.springframework.context.annotation.*;
 
 @Configuration
@@ -20,8 +20,8 @@ class DeviceConfiguration {
 	}
 
 	@Bean
-	public PhysicalDevice physical(Instance instance, VulkanCoreLibrary library) {
-		return PhysicalDevice.enumerate(instance, library)
+	public PhysicalDevice physical(Instance instance) {
+		return PhysicalDevice.enumerate(instance)
 				.filter(graphics)
 				.filter(presentation)
 				.findAny()

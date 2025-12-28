@@ -11,6 +11,11 @@ import org.springframework.context.annotation.*;
 @Configuration
 class VertexBufferConfiguration {
 	@Bean
+	static VulkanBuffer.Factory factory(Allocator allocator) {
+		return new VulkanBuffer.Factory(allocator);
+	}
+
+	@Bean
 	static Mesh cube() {
 		return new Cube()
 				.build(0.4f)
@@ -18,10 +23,10 @@ class VertexBufferConfiguration {
 	}
 
 	@Bean
-	static VulkanBuffer vertices(Allocator allocator, Mesh mesh, Command.Pool graphics) {
+	static VulkanBuffer vertices(VulkanBuffer.Factory factory, Mesh mesh, Command.Pool graphics) {
 		// Create staging buffer
 		final MeshData vertices = mesh.vertices();
-		final VulkanBuffer staging = VulkanBuffer.staging(allocator, vertices.length());
+		final VulkanBuffer staging = factory.staging(vertices.length());
 		vertices.buffer(staging.buffer());
 
 		// Init VBO properties
@@ -32,7 +37,7 @@ class VertexBufferConfiguration {
 				.build();
 
 		// Create destination
-		final VulkanBuffer buffer = VulkanBuffer.create(allocator, vertices.length(), props);
+		final VulkanBuffer buffer = factory.create(vertices.length(), props);
 
 		// Copy to destination
 		staging

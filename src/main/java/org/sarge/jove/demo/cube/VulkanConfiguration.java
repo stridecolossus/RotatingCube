@@ -14,9 +14,9 @@ class VulkanConfiguration {
 	}
 
 	@Bean
-	static Instance instance(VulkanCoreLibrary lib, Desktop desktop) { // , ApplicationConfiguration cfg) {
+	static Instance instance(VulkanCoreLibrary lib, Desktop desktop) {
 		final var instance = new Instance.Builder()
-				.name("Rotating Cube Demo") // cfg.getTitle())
+				.name("Rotating Cube Demo")
 				.extension(DiagnosticHandler.EXTENSION)
 				.extensions(desktop.extensions())
 				.layer(DiagnosticHandler.STANDARD_VALIDATION)
@@ -31,8 +31,8 @@ class VulkanConfiguration {
 	}
 
 	@Bean
-	static Allocator allocator(LogicalDevice dev, PhysicalDevice physical) {
+	static Allocator allocator(LogicalDevice device, PhysicalDevice physical) {
 		final var types = MemoryType.enumerate(physical.memory());
-		return new Allocator(dev, types);
+		return Allocator.of(device, types);
 	}
 }
